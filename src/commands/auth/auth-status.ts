@@ -38,6 +38,10 @@ export const statusCommand = new Command()
   .action(async () => {
     const mode = getAuthMode()
     try {
+      // Tracks whether we've independently confirmed the credentials work
+      // (i.e. a successful client-credentials token exchange). Only then is it
+      // safe to treat a failed `viewer` query as the benign no-viewer case.
+      let credentialsVerified = false
       if (mode) {
         console.log(`Auth mode: ${describeAuthMode(mode)}`)
         if (mode === "client-credentials") {
@@ -45,6 +49,7 @@ export const statusCommand = new Command()
           // Verify the credentials up front so a bad client_id/secret is
           // reported clearly instead of being masked as "no viewer" below.
           await getClientCredentialsToken()
+          credentialsVerified = true
         }
       }
 
@@ -54,12 +59,14 @@ export const statusCommand = new Command()
         const result = await client.request(viewerQuery)
         viewer = result.viewer
       } catch (viewerError) {
-        // OAuth app (bot) tokens have no associated user, so the `viewer`
-        // query may fail. The credentials themselves are already verified.
-        if (mode === "client-credentials" || mode === "access-token") {
+        // An OAuth app may have no associated user, so `viewer` can fail even
+        // when auth is fine — but only suppress that error once we've confirmed
+        // the credentials are valid. Otherwise (e.g. an expired
+        // LINEAR_ACCESS_TOKEN) surface the real authentication/network error.
+        if (credentialsVerified) {
           console.log(
-            "  Authenticated as an OAuth app (no viewer user). " +
-              "Use team/issue commands to verify access.",
+            "  Credentials verified, but no viewer user is available for " +
+              "this OAuth app. Use team/issue commands to verify access.",
           )
           return
         }

@@ -68,106 +68,107 @@ linear issue comment add ENG-123 --body-file /tmp/comment.md
 Compact command list, generated from `linear --help`:
 
 ```bash
-linear auth
-linear auth login
-linear auth logout
-linear auth list
-linear auth default
-linear auth token
-linear auth whoami
-linear auth migrate
+x-linear auth
+x-linear auth login
+x-linear auth logout
+x-linear auth list
+x-linear auth default
+x-linear auth token
+x-linear auth whoami
+x-linear auth status
+x-linear auth migrate
 
-linear issue
-linear issue id
-linear issue mine
-linear issue query
-linear issue title
-linear issue start
-linear issue view
-linear issue url
-linear issue describe
-linear issue commits
-linear issue pull-request
-linear issue delete
-linear issue create
-linear issue update
-linear issue comment
-linear issue comment add
-linear issue comment delete
-linear issue comment update
-linear issue comment list
-linear issue attach
-linear issue link
-linear issue relation
-linear issue relation add
-linear issue relation delete
-linear issue relation list
-linear issue agent-session
-linear issue agent-session list
-linear issue agent-session view
+x-linear issue
+x-linear issue id
+x-linear issue mine
+x-linear issue query
+x-linear issue title
+x-linear issue start
+x-linear issue view
+x-linear issue url
+x-linear issue describe
+x-linear issue commits
+x-linear issue pull-request
+x-linear issue delete
+x-linear issue create
+x-linear issue update
+x-linear issue comment
+x-linear issue comment add
+x-linear issue comment delete
+x-linear issue comment update
+x-linear issue comment list
+x-linear issue attach
+x-linear issue link
+x-linear issue relation
+x-linear issue relation add
+x-linear issue relation delete
+x-linear issue relation list
+x-linear issue agent-session
+x-linear issue agent-session list
+x-linear issue agent-session view
 
-linear team
-linear team create
-linear team delete
-linear team list
-linear team id
-linear team autolinks
-linear team members
+x-linear team
+x-linear team create
+x-linear team delete
+x-linear team list
+x-linear team id
+x-linear team autolinks
+x-linear team members
 
-linear project
-linear project list
-linear project view
-linear project create
-linear project update
-linear project delete
+x-linear project
+x-linear project list
+x-linear project view
+x-linear project create
+x-linear project update
+x-linear project delete
 
-linear project-update
-linear project-update create
-linear project-update list
+x-linear project-update
+x-linear project-update create
+x-linear project-update list
 
-linear cycle
-linear cycle list
-linear cycle view
+x-linear cycle
+x-linear cycle list
+x-linear cycle view
 
-linear milestone
-linear milestone list
-linear milestone view
-linear milestone create
-linear milestone update
-linear milestone delete
+x-linear milestone
+x-linear milestone list
+x-linear milestone view
+x-linear milestone create
+x-linear milestone update
+x-linear milestone delete
 
-linear initiative
-linear initiative list
-linear initiative view
-linear initiative create
-linear initiative archive
-linear initiative update
-linear initiative unarchive
-linear initiative delete
-linear initiative add-project
-linear initiative remove-project
+x-linear initiative
+x-linear initiative list
+x-linear initiative view
+x-linear initiative create
+x-linear initiative archive
+x-linear initiative update
+x-linear initiative unarchive
+x-linear initiative delete
+x-linear initiative add-project
+x-linear initiative remove-project
 
-linear initiative-update
-linear initiative-update create
-linear initiative-update list
+x-linear initiative-update
+x-linear initiative-update create
+x-linear initiative-update list
 
-linear label
-linear label list
-linear label create
-linear label delete
+x-linear label
+x-linear label list
+x-linear label create
+x-linear label delete
 
-linear document
-linear document list
-linear document view
-linear document create
-linear document update
-linear document delete
+x-linear document
+x-linear document list
+x-linear document view
+x-linear document create
+x-linear document update
+x-linear document delete
 
-linear config
+x-linear config
 
-linear schema
+x-linear schema
 
-linear api
+x-linear api
 ```
 
 ## Reference Documentation

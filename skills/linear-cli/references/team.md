@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear team
+Usage:   x-linear team
 
 Description:
 
@@ -33,7 +33,7 @@ Commands:
 > Create a linear team
 
 ```
-Usage:   linear team create
+Usage:   x-linear team create
 
 Description:
 
@@ -55,7 +55,7 @@ Options:
 > Delete a Linear team
 
 ```
-Usage:   linear team delete <teamKey>
+Usage:   x-linear team delete <teamKey>
 
 Description:
 
@@ -74,7 +74,7 @@ Options:
 > List teams
 
 ```
-Usage:   linear team list
+Usage:   x-linear team list
 
 Description:
 
@@ -93,7 +93,7 @@ Options:
 > Print the configured team id
 
 ```
-Usage:   linear team id
+Usage:   x-linear team id
 
 Description:
 
@@ -110,7 +110,7 @@ Options:
 > Configure GitHub repository autolinks for Linear issues with this team prefix
 
 ```
-Usage:   linear team autolinks
+Usage:   x-linear team autolinks
 
 Description:
 
@@ -127,7 +127,7 @@ Options:
 > List team members
 
 ```
-Usage:   linear team members [teamKey]
+Usage:   x-linear team members [teamKey]
 
 Description:
 

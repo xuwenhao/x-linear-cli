@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear initiative-update
+Usage:   x-linear initiative-update
 
 Description:
 
@@ -29,7 +29,7 @@ Commands:
 > Create a new status update for an initiative
 
 ```
-Usage:   linear initiative-update create <initiativeId>
+Usage:   x-linear initiative-update create <initiativeId>
 
 Description:
 
@@ -50,7 +50,7 @@ Options:
 > List status updates for an initiative
 
 ```
-Usage:   linear initiative-update list <initiativeId>
+Usage:   x-linear initiative-update list <initiativeId>
 
 Description:
 

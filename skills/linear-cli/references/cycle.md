@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear cycle
+Usage:   x-linear cycle
 
 Description:
 
@@ -29,7 +29,7 @@ Commands:
 > List cycles for a team
 
 ```
-Usage:   linear cycle list
+Usage:   x-linear cycle list
 
 Description:
 
@@ -47,7 +47,7 @@ Options:
 > View cycle details
 
 ```
-Usage:   linear cycle view <cycleRef>
+Usage:   x-linear cycle view <cycleRef>
 
 Description:
 

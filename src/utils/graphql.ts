@@ -195,8 +195,13 @@ export function getGraphQLClient(): GraphQLClient {
       "User-Agent": `${USER_AGENT_PRODUCT}/${denoConfig.version}`,
     },
     requestMiddleware: async (request) => {
-      const headers = new Headers(request.headers)
-      headers.set("Authorization", await resolveAuthorization())
+      const authorization = await resolveAuthorization()
+      // `request.headers` exists at runtime, but graphql-request's middleware
+      // type doesn't reliably expose it across Deno/TS versions — cast to read it.
+      const headers = new Headers(
+        (request as { headers?: HeadersInit }).headers,
+      )
+      headers.set("Authorization", authorization)
       return { ...request, headers }
     },
   })

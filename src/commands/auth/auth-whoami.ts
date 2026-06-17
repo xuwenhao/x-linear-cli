@@ -36,6 +36,9 @@ export const whoamiCommand = new Command()
   .action(async () => {
     const mode = getAuthMode()
     try {
+      // Only suppress a failed `viewer` query once we've independently
+      // confirmed the credentials work (client-credentials token exchange).
+      let credentialsVerified = false
       if (mode) {
         console.log(`Auth mode: ${describeAuthMode(mode)}`)
         if (mode === "client-credentials") {
@@ -43,6 +46,7 @@ export const whoamiCommand = new Command()
           // Verify the credentials up front so a bad client_id/secret is
           // reported clearly instead of being masked as "no viewer" below.
           await getClientCredentialsToken()
+          credentialsVerified = true
         }
       }
 
@@ -52,9 +56,12 @@ export const whoamiCommand = new Command()
         const result = await client.request(viewerQuery)
         viewer = result.viewer
       } catch (viewerError) {
-        // OAuth app (bot) tokens have no associated user.
-        if (mode === "client-credentials" || mode === "access-token") {
-          console.log("  Authenticated as an OAuth app (no viewer user).")
+        // An OAuth app may have no associated user, but only treat that as
+        // benign once auth is confirmed; otherwise surface the real error.
+        if (credentialsVerified) {
+          console.log(
+            "  Credentials verified, but no viewer user is available for this OAuth app.",
+          )
           return
         }
         throw viewerError

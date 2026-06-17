@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear initiative
+Usage:   x-linear initiative
 
 Description:
 
@@ -36,7 +36,7 @@ Commands:
 > List initiatives
 
 ```
-Usage:   linear initiative list
+Usage:   x-linear initiative list
 
 Description:
 
@@ -60,7 +60,7 @@ Options:
 > View initiative details
 
 ```
-Usage:   linear initiative view <initiativeId>
+Usage:   x-linear initiative view <initiativeId>
 
 Description:
 
@@ -80,7 +80,7 @@ Options:
 > Create a new Linear initiative
 
 ```
-Usage:   linear initiative create
+Usage:   x-linear initiative create
 
 Description:
 
@@ -105,7 +105,7 @@ Options:
 > Archive a Linear initiative
 
 ```
-Usage:   linear initiative archive [initiativeId]
+Usage:   x-linear initiative archive [initiativeId]
 
 Description:
 
@@ -126,7 +126,7 @@ Options:
 > Update a Linear initiative
 
 ```
-Usage:   linear initiative update <initiativeId>
+Usage:   x-linear initiative update <initiativeId>
 
 Description:
 
@@ -151,7 +151,7 @@ Options:
 > Unarchive a Linear initiative
 
 ```
-Usage:   linear initiative unarchive <initiativeId>
+Usage:   x-linear initiative unarchive <initiativeId>
 
 Description:
 
@@ -169,7 +169,7 @@ Options:
 > Permanently delete a Linear initiative
 
 ```
-Usage:   linear initiative delete [initiativeId]
+Usage:   x-linear initiative delete [initiativeId]
 
 Description:
 
@@ -190,7 +190,7 @@ Options:
 > Link a project to an initiative
 
 ```
-Usage:   linear initiative add-project <initiative> <project>
+Usage:   x-linear initiative add-project <initiative> <project>
 
 Description:
 
@@ -208,7 +208,7 @@ Options:
 > Unlink a project from an initiative
 
 ```
-Usage:   linear initiative remove-project <initiative> <project>
+Usage:   x-linear initiative remove-project <initiative> <project>
 
 Description:
 

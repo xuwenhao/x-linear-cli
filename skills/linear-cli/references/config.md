@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear config
+Usage:   x-linear config
 
 Description:
 
