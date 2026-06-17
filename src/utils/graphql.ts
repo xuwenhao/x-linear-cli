@@ -5,8 +5,25 @@ import { getCredentialApiKey } from "../credentials.ts"
 import denoConfig from "../../deno.json" with { type: "json" }
 import { extractGraphQLMessage, isDebugMode } from "./errors.ts"
 import { LINEAR_API_ENDPOINT } from "../const.ts"
+import { getClientCredentialsToken, hasClientCredentials } from "./oauth.ts"
 
 export { ClientError }
+
+/** Product name sent in the User-Agent header. */
+const USER_AGENT_PRODUCT = "x-linear-cli"
+
+/**
+ * How the CLI is authenticating:
+ * - `access-token`: a pre-fetched OAuth access token (LINEAR_ACCESS_TOKEN)
+ * - `client-credentials`: OAuth app / bot (LINEAR_CLIENT_ID + LINEAR_CLIENT_SECRET)
+ * - `api-key`: a personal Linear API key (LINEAR_API_KEY / config / credentials)
+ */
+export type AuthMode = "access-token" | "client-credentials" | "api-key"
+
+const NO_CREDENTIALS_MESSAGE =
+  "No Linear credentials configured. Set LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET " +
+  "to authenticate as an OAuth app (bot), or set LINEAR_ACCESS_TOKEN / LINEAR_API_KEY, " +
+  "add api_key to .linear.toml, or run `x-linear auth login`."
 
 // Re-export error utilities for backward compatibility
 export { isClientError } from "./errors.ts"
@@ -94,25 +111,93 @@ export function getGraphQLEndpoint(): string {
 }
 
 /**
+ * Determine which authentication mode is currently configured, in precedence
+ * order. Returns undefined when no credentials are configured at all.
+ */
+export function getAuthMode(): AuthMode | undefined {
+  if (Deno.env.get("LINEAR_ACCESS_TOKEN")) return "access-token"
+  if (hasClientCredentials()) return "client-credentials"
+  try {
+    if (getResolvedApiKey()) return "api-key"
+  } catch {
+    // A misconfigured API-key path (e.g. LINEAR_API_KEY + --workspace) still
+    // signals api-key intent; let the real error surface when the key resolves.
+    return "api-key"
+  }
+  return undefined
+}
+
+/** Human-readable description of an auth mode for status output. */
+export function describeAuthMode(mode: AuthMode): string {
+  switch (mode) {
+    case "access-token":
+      return "OAuth access token (bot)"
+    case "client-credentials":
+      return "OAuth client credentials (bot)"
+    case "api-key":
+      return "personal API key"
+  }
+}
+
+/** Prefix an OAuth token with "Bearer " (idempotent). API keys are sent raw. */
+function toBearer(token: string): string {
+  return token.startsWith("Bearer ") ? token : `Bearer ${token}`
+}
+
+/**
+ * Resolve the full Authorization header value, following the precedence chain:
+ * 1. LINEAR_ACCESS_TOKEN     → "Bearer <token>"
+ * 2. LINEAR_CLIENT_ID/SECRET → client-credentials exchange → "Bearer <token>"
+ * 3. resolved API key        → raw key (no "Bearer" prefix)
+ */
+export async function resolveAuthorization(): Promise<string> {
+  const accessToken = Deno.env.get("LINEAR_ACCESS_TOKEN")
+  if (accessToken) {
+    return toBearer(accessToken)
+  }
+
+  if (hasClientCredentials()) {
+    return toBearer(await getClientCredentialsToken())
+  }
+
+  const apiKey = getResolvedApiKey()
+  if (!apiKey) {
+    throw new Error(NO_CREDENTIALS_MESSAGE)
+  }
+  return apiKey
+}
+
+/**
  * Create a GraphQL client with an explicit API key.
  * Use this when you need to validate a specific key (e.g., during auth login).
+ * The key is sent raw (personal API keys are not bearer tokens).
  */
 export function createGraphQLClient(apiKey: string): GraphQLClient {
   return new GraphQLClient(getGraphQLEndpoint(), {
     headers: {
       Authorization: apiKey,
-      "User-Agent": `schpet-linear-cli/${denoConfig.version}`,
+      "User-Agent": `${USER_AGENT_PRODUCT}/${denoConfig.version}`,
     },
   })
 }
 
 export function getGraphQLClient(): GraphQLClient {
-  const apiKey = getResolvedApiKey()
-  if (!apiKey) {
-    throw new Error(
-      "No API key configured. Set LINEAR_API_KEY, add api_key to .linear.toml, or run `linear auth login`.",
-    )
+  // Fail fast with a helpful message if nothing is configured, rather than
+  // surfacing a confusing error mid-request.
+  if (getAuthMode() === undefined) {
+    throw new Error(NO_CREDENTIALS_MESSAGE)
   }
 
-  return createGraphQLClient(apiKey)
+  // The Authorization header is resolved per-request so the OAuth token
+  // exchange (and its in-memory caching) can be awaited lazily.
+  return new GraphQLClient(getGraphQLEndpoint(), {
+    headers: {
+      "User-Agent": `${USER_AGENT_PRODUCT}/${denoConfig.version}`,
+    },
+    requestMiddleware: async (request) => {
+      const headers = new Headers(request.headers)
+      headers.set("Authorization", await resolveAuthorization())
+      return { ...request, headers }
+    },
+  })
 }

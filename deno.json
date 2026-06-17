@@ -1,13 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/denoland/deno/main/cli/schemas/config-file.v1.json",
-  "name": "@schpet/linear-cli",
+  "name": "@xuwenhao/x-linear-cli",
   "version": "2.0.0",
   "exports": "./src/main.ts",
   "license": "MIT",
   "tasks": {
     "dev": "deno task codegen && deno run --allow-all --quiet src/main.ts ",
-    "install": "deno task codegen && deno install -c ./deno.json --allow-all --quiet -g -f -n linear ./src/main.ts",
-    "uninstall": "deno uninstall -g linear",
+    "install": "deno task codegen && deno install -c ./deno.json --allow-all --quiet -g -f -n x-linear ./src/main.ts",
+    "uninstall": "deno uninstall -g x-linear",
     "sync-schema": "deno task dev schema -o graphql/schema.graphql",
     "codegen": "deno run --allow-all npm:@graphql-codegen/cli/graphql-codegen-esm",
     "check": "deno check src/main.ts",

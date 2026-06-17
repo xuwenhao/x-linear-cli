@@ -1,4 +1,6 @@
-# linear cli
+# x-linear cli
+
+> A fork of [schpet/linear-cli](https://github.com/schpet/linear-cli) that adds **OAuth client-credentials (bot/app) authentication** in addition to personal API keys. Set `LINEAR_CLIENT_ID` + `LINEAR_CLIENT_SECRET` and the CLI acts as your Linear OAuth app — actions are attributed to the bot, not to a personal user. See [Authenticating as a bot](#authenticating-as-a-bot-oauth-client-credentials). The command (binary) is `x-linear`.
 
 a cli to list, start and create issues in the [linear](https://linear.app/) issue tracker. git and [jj](https://www.jj-vcs.dev/) aware to keep you in the right views in linear. allows jumping to the web or the linear desktop app similar to `gh`.
 
@@ -104,6 +106,31 @@ deno task install
    ```
 
 see [docs/authentication.md](docs/authentication.md) for multi-workspace support and other authentication options.
+
+### authenticating as a bot (OAuth client credentials)
+
+To act as a Linear **OAuth app / bot** rather than a personal user, create an OAuth application in your Linear workspace settings (Settings → API → OAuth applications) and provide its credentials via environment variables:
+
+```sh
+export LINEAR_CLIENT_ID=...
+export LINEAR_CLIENT_SECRET=...
+# optional — defaults to: read,write,issues:create,comments:create
+export LINEAR_OAUTH_SCOPES="read,write,issues:create,comments:create"
+
+x-linear auth status      # shows "Auth mode: OAuth client credentials (bot)" + scopes
+x-linear team list
+x-linear issue create --team ENG --title "filed by the bot"
+```
+
+The CLI exchanges the client credentials for an app access token (`POST https://api.linear.app/oauth/token`, `grant_type=client_credentials`) and caches it in memory. Issues and comments created this way are attributed to the OAuth app, not to whoever owns the credentials.
+
+Credentials are resolved in this precedence order:
+
+1. `LINEAR_ACCESS_TOKEN` — a pre-fetched OAuth access token (sent as `Bearer`)
+2. `LINEAR_CLIENT_ID` + `LINEAR_CLIENT_SECRET` — client-credentials exchange (bot)
+3. `LINEAR_API_KEY` / `api_key` in `.linear.toml` / `x-linear auth login` — personal API key
+
+> Note: a bot token has no associated user, so user-centric commands (`issue mine`, `auth whoami`) have no "viewer" to report. Use team/issue/project commands instead.
 
 the CLI works with both git and jj version control systems:
 

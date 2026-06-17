@@ -22,13 +22,20 @@ import "./config.ts"
 import "./credentials.ts"
 
 await new Command()
-  .name("linear")
+  .name("x-linear")
   .version(denoConfig.version)
   .description(
     `Handy linear commands from the command line.
 
+Authentication (in precedence order):
+  LINEAR_ACCESS_TOKEN                       Pre-fetched OAuth access token (bot)
+  LINEAR_CLIENT_ID + LINEAR_CLIENT_SECRET   OAuth app / bot (client credentials)
+  LINEAR_API_KEY                            Personal API key
+  (also: api_key in .linear.toml, or \`x-linear auth login\`)
+
 Environment Variables:
-  LINEAR_DEBUG=1    Show full error details including stack traces`,
+  LINEAR_OAUTH_SCOPES   Override OAuth scopes (default: read,write,issues:create,comments:create)
+  LINEAR_DEBUG=1        Show full error details including stack traces`,
   )
   .globalOption(
     "--workspace <slug:string>",
