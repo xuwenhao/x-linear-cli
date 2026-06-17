@@ -6,6 +6,11 @@ import {
   resetTokenCache,
 } from "../../src/utils/oauth.ts"
 
+// These tests exercise only the in-memory cache; disable the on-disk cache so
+// they stay hermetic (no reads/writes to the real cache dir). The disk cache
+// has its own dedicated tests in token-cache.test.ts.
+Deno.env.set("LINEAR_NO_TOKEN_CACHE", "1")
+
 function setEnv(vars: Record<string, string | undefined>) {
   for (const [key, value] of Object.entries(vars)) {
     if (value === undefined) Deno.env.delete(key)

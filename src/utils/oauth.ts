@@ -1,3 +1,5 @@
+import { ensureDir } from "@std/fs"
+import { dirname, join } from "@std/path"
 import {
   DEFAULT_LINEAR_OAUTH_SCOPES,
   LINEAR_OAUTH_TOKEN_ENDPOINT,
@@ -71,6 +73,111 @@ export function resetTokenCache(): void {
   cachedToken = null
 }
 
+// ── Cross-process disk cache ─────────────────────────────────────────────
+//
+// CLI invocations are short-lived, so the in-memory cache above only helps
+// within a single command. To avoid a token exchange on every command, the
+// access token is also cached on disk (keyed by client id + scopes) until
+// shortly before it expires. Only the access token is stored — never the
+// client secret. Disable with LINEAR_NO_TOKEN_CACHE=1.
+
+const TOKEN_CACHE_VERSION = 1
+
+interface DiskTokenEntry {
+  accessToken: string
+  expiresAtMs: number
+}
+
+interface DiskTokenCache {
+  version: number
+  entries: Record<string, DiskTokenEntry>
+}
+
+/**
+ * Path to the on-disk token cache, following the XDG cache spec on Unix and
+ * LOCALAPPDATA on Windows. Returns null when caching is disabled or no suitable
+ * directory is available. Override the directory with LINEAR_TOKEN_CACHE_DIR.
+ */
+export function getTokenCachePath(): string | null {
+  if (Deno.env.get("LINEAR_NO_TOKEN_CACHE")) return null
+
+  const override = Deno.env.get("LINEAR_TOKEN_CACHE_DIR")
+  if (override) return join(override, "token-cache.json")
+
+  if (Deno.build.os === "windows") {
+    const base = Deno.env.get("LOCALAPPDATA") || Deno.env.get("APPDATA")
+    if (base) return join(base, "linear", "token-cache.json")
+  } else {
+    const xdgCacheHome = Deno.env.get("XDG_CACHE_HOME")
+    const homeDir = Deno.env.get("HOME")
+    if (xdgCacheHome) return join(xdgCacheHome, "linear", "token-cache.json")
+    if (homeDir) return join(homeDir, ".cache", "linear", "token-cache.json")
+  }
+  return null
+}
+
+async function readDiskCacheFile(path: string): Promise<DiskTokenCache | null> {
+  try {
+    const parsed = JSON.parse(await Deno.readTextFile(path)) as DiskTokenCache
+    if (parsed && typeof parsed === "object" && parsed.entries) return parsed
+  } catch {
+    // Missing or corrupt cache file — treat as empty.
+  }
+  return null
+}
+
+async function readDiskToken(cacheKey: string): Promise<DiskTokenEntry | null> {
+  const path = getTokenCachePath()
+  if (!path) return null
+  const entry = (await readDiskCacheFile(path))?.entries?.[cacheKey]
+  if (
+    entry && typeof entry.accessToken === "string" &&
+    typeof entry.expiresAtMs === "number"
+  ) {
+    return entry
+  }
+  return null
+}
+
+async function writeDiskToken(
+  cacheKey: string,
+  entry: DiskTokenEntry,
+): Promise<void> {
+  const path = getTokenCachePath()
+  if (!path) return
+  try {
+    const cache = (await readDiskCacheFile(path)) ??
+      { version: TOKEN_CACHE_VERSION, entries: {} }
+    cache.version = TOKEN_CACHE_VERSION
+    cache.entries[cacheKey] = entry
+    await ensureDir(dirname(path))
+    // mode is honored on Unix and ignored on Windows; chmod afterwards in case
+    // the file already existed with looser permissions.
+    await Deno.writeTextFile(path, JSON.stringify(cache), { mode: 0o600 })
+    if (Deno.build.os !== "windows") {
+      try {
+        await Deno.chmod(path, 0o600)
+      } catch {
+        // Best-effort.
+      }
+    }
+  } catch {
+    // Caching is best-effort; never fail a command because we couldn't persist.
+  }
+}
+
+/** Remove the on-disk token cache. Clears the in-memory cache too. */
+export async function clearTokenCache(): Promise<void> {
+  cachedToken = null
+  const path = getTokenCachePath()
+  if (!path) return
+  try {
+    await Deno.remove(path)
+  } catch {
+    // Nothing to remove.
+  }
+}
+
 /**
  * Exchange client credentials for an app access token, caching it in memory
  * until shortly before it expires.
@@ -86,12 +193,25 @@ export async function getClientCredentialsToken(): Promise<string> {
   const scope = getResolvedScopes()
   const cacheKey = `${creds.clientId}:${scope}`
   const now = Date.now()
+
+  // L1: in-memory cache (same process).
   if (
     cachedToken &&
     cachedToken.cacheKey === cacheKey &&
     cachedToken.expiresAtMs > now + TOKEN_EXPIRY_SKEW_MS
   ) {
     return cachedToken.accessToken
+  }
+
+  // L2: on-disk cache (across processes).
+  const disk = await readDiskToken(cacheKey)
+  if (disk && disk.expiresAtMs > now + TOKEN_EXPIRY_SKEW_MS) {
+    cachedToken = {
+      cacheKey,
+      accessToken: disk.accessToken,
+      expiresAtMs: disk.expiresAtMs,
+    }
+    return disk.accessToken
   }
 
   const body = new URLSearchParams({
@@ -124,10 +244,11 @@ export async function getClientCredentialsToken(): Promise<string> {
     )
   }
 
-  cachedToken = {
-    cacheKey,
+  const expiresAtMs = now + (json.expires_in ?? 3600) * 1000
+  cachedToken = { cacheKey, accessToken: json.access_token, expiresAtMs }
+  await writeDiskToken(cacheKey, {
     accessToken: json.access_token,
-    expiresAtMs: now + (json.expires_in ?? 3600) * 1000,
-  }
+    expiresAtMs,
+  })
   return json.access_token
 }

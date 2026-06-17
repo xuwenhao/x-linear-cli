@@ -34,8 +34,9 @@ Authentication (in precedence order):
   (also: api_key in .linear.toml, or \`x-linear auth login\`)
 
 Environment Variables:
-  LINEAR_OAUTH_SCOPES   Override OAuth scopes (default: read,write,issues:create,comments:create)
-  LINEAR_DEBUG=1        Show full error details including stack traces`,
+  LINEAR_OAUTH_SCOPES    Override OAuth scopes (default: read,write,issues:create,comments:create)
+  LINEAR_NO_TOKEN_CACHE  Disable the on-disk OAuth token cache
+  LINEAR_DEBUG=1         Show full error details including stack traces`,
   )
   .globalOption(
     "--workspace <slug:string>",

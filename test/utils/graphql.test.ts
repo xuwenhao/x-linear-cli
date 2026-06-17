@@ -12,6 +12,9 @@ function clearAuthEnv() {
   Deno.env.delete("LINEAR_CLIENT_ID")
   Deno.env.delete("LINEAR_CLIENT_SECRET")
   Deno.env.delete("LINEAR_API_KEY")
+  Deno.env.delete("LINEAR_TOKEN_CACHE_DIR")
+  // Keep the disk cache out of these tests (they hit the real fetch mock).
+  Deno.env.set("LINEAR_NO_TOKEN_CACHE", "1")
   setCliWorkspace(undefined)
   resetTokenCache()
 }

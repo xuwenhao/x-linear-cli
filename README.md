@@ -122,7 +122,15 @@ x-linear team list
 x-linear issue create --team ENG --title "filed by the bot"
 ```
 
-The CLI exchanges the client credentials for an app access token (`POST https://api.linear.app/oauth/token`, `grant_type=client_credentials`) and caches it in memory. Issues and comments created this way are attributed to the OAuth app, not to whoever owns the credentials.
+The CLI exchanges the client credentials for an app access token (`POST https://api.linear.app/oauth/token`, `grant_type=client_credentials`). Issues and comments created this way are attributed to the OAuth app, not to whoever owns the credentials.
+
+The access token is cached **on disk** (keyed by client id + scopes) so it's reused across commands until shortly before it expires, avoiding a token exchange on every invocation. Only the access token is stored — never the client secret:
+
+- Location: `$XDG_CACHE_HOME/linear/token-cache.json` (Unix) / `~/.cache/linear/token-cache.json` / `%LOCALAPPDATA%\linear\token-cache.json` (Windows), written with `0600` permissions.
+- Disable with `LINEAR_NO_TOKEN_CACHE=1` (the token is then exchanged once per command and kept only in memory).
+- Override the directory with `LINEAR_TOKEN_CACHE_DIR` (mainly for testing).
+
+If you've pre-fetched a token yourself, set `LINEAR_ACCESS_TOKEN` to skip the exchange entirely.
 
 Credentials are resolved in this precedence order:
 
