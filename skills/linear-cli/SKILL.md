@@ -75,7 +75,6 @@ x-linear auth list
 x-linear auth default
 x-linear auth token
 x-linear auth whoami
-x-linear auth status
 x-linear auth migrate
 
 x-linear issue

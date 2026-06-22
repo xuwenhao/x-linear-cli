@@ -24,7 +24,6 @@ Commands:
   default  [workspace]  - Set the default workspace                                  
   token                 - Print the configured token (API key, or OAuth access token)
   whoami                - Print information about the authenticated user             
-  status                - Print information about the authenticated user             
   migrate               - Migrate plaintext credentials to system keyring
 ```
 
@@ -124,23 +123,6 @@ Options:
 
 ```
 Usage:   x-linear auth whoami
-
-Description:
-
-  Print information about the authenticated user
-
-Options:
-
-  -h, --help           - Show this help.                      
-  --workspace  <slug>  - Target workspace (uses credentials)
-```
-
-### status
-
-> Print information about the authenticated user
-
-```
-Usage:   x-linear auth status
 
 Description:
 

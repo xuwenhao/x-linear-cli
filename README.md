@@ -117,7 +117,7 @@ export LINEAR_CLIENT_SECRET=...
 # optional — defaults to: read,write,issues:create,comments:create
 export LINEAR_OAUTH_SCOPES="read,write,issues:create,comments:create"
 
-x-linear auth status      # shows "Auth mode: OAuth client credentials (bot)" + scopes
+x-linear auth whoami      # shows "Auth mode: OAuth client credentials (bot)" + scopes
 x-linear team list
 x-linear issue create --team ENG --title "filed by the bot"
 ```
