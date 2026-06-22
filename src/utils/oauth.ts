@@ -153,6 +153,7 @@ async function readDiskToken(cacheKey: string): Promise<DiskTokenEntry | null> {
 
 async function writeDiskToken(
   cacheKey: string,
+  siblingPrefix: string,
   entry: DiskTokenEntry,
 ): Promise<void> {
   const path = getTokenCachePath()
@@ -161,6 +162,14 @@ async function writeDiskToken(
     const cache = (await readDiskCacheFile(path)) ??
       { version: TOKEN_CACHE_VERSION, entries: {} }
     cache.version = TOKEN_CACHE_VERSION
+    // Drop other cached tokens for the same client+secret (e.g. a previous
+    // scope set). Linear revokes prior client-credentials tokens, so keeping
+    // them would risk serving a revoked token if the scopes change back.
+    for (const key of Object.keys(cache.entries)) {
+      if (key !== cacheKey && key.startsWith(siblingPrefix)) {
+        delete cache.entries[key]
+      }
+    }
     cache.entries[cacheKey] = entry
     await ensureDir(dirname(path))
     // mode is honored on Unix and ignored on Windows; chmod afterwards in case
@@ -217,11 +226,12 @@ export async function getClientCredentialsToken(): Promise<string> {
   }
 
   const scope = getResolvedScopes()
-  // Include a fingerprint of the secret in the cache key so rotating the client
+  // Scope tokens to client id + a fingerprint of the secret, so rotating the
   // secret (which revokes existing tokens) doesn't keep serving a stale token.
-  const cacheKey = `${creds.clientId}:${await fingerprint(
+  const keyPrefix = `${creds.clientId}:${await fingerprint(
     creds.clientSecret,
-  )}:${scope}`
+  )}:`
+  const cacheKey = `${keyPrefix}${scope}`
   const now = Date.now()
 
   // L1: in-memory cache (same process).
@@ -276,7 +286,7 @@ export async function getClientCredentialsToken(): Promise<string> {
 
   const expiresAtMs = now + (json.expires_in ?? 3600) * 1000
   cachedToken = { cacheKey, accessToken: json.access_token, expiresAtMs }
-  await writeDiskToken(cacheKey, {
+  await writeDiskToken(cacheKey, keyPrefix, {
     accessToken: json.access_token,
     expiresAtMs,
   })

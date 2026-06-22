@@ -104,6 +104,43 @@ Deno.test("disk cache - rotating the client secret triggers a fresh exchange", a
   }
 })
 
+Deno.test("disk cache - changing scopes purges the previous scope's token", async () => {
+  const dir = await Deno.makeTempDir()
+  Deno.env.set("LINEAR_TOKEN_CACHE_DIR", dir)
+  Deno.env.delete("LINEAR_NO_TOKEN_CACHE")
+  Deno.env.set("LINEAR_CLIENT_ID", "scope-id")
+  Deno.env.set("LINEAR_CLIENT_SECRET", "secret")
+  Deno.env.delete("LINEAR_OAUTH_SCOPES")
+  resetTokenCache()
+  const f = mockTokenFetch("tok", 3600)
+  try {
+    // Default scopes → exchange #1.
+    await getClientCredentialsToken()
+    assertEquals(f.calls(), 1)
+
+    // Narrower scope set → exchange #2, and the default entry is purged.
+    Deno.env.set("LINEAR_OAUTH_SCOPES", "read")
+    resetTokenCache()
+    await getClientCredentialsToken()
+    assertEquals(f.calls(), 2)
+
+    // Back to default scopes → the old default entry is gone, so re-exchange.
+    Deno.env.delete("LINEAR_OAUTH_SCOPES")
+    resetTokenCache()
+    await getClientCredentialsToken()
+    assertEquals(f.calls(), 3)
+  } finally {
+    f.restore()
+    await clearTokenCache()
+    await Deno.remove(dir, { recursive: true }).catch(() => {})
+    Deno.env.delete("LINEAR_TOKEN_CACHE_DIR")
+    Deno.env.delete("LINEAR_OAUTH_SCOPES")
+    Deno.env.delete("LINEAR_CLIENT_ID")
+    Deno.env.delete("LINEAR_CLIENT_SECRET")
+    resetTokenCache()
+  }
+})
+
 Deno.test("disk cache - expired disk token triggers a fresh exchange", async () => {
   await withCacheDir("expired-id", async () => {
     const f = mockTokenFetch("old-token", 0) // already within the skew window

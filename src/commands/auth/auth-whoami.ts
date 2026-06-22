@@ -6,10 +6,7 @@ import {
   getAuthMode,
   getGraphQLClient,
 } from "../../utils/graphql.ts"
-import {
-  getClientCredentialsToken,
-  getResolvedScopes,
-} from "../../utils/oauth.ts"
+import { getResolvedScopes } from "../../utils/oauth.ts"
 import { LINEAR_WEB_BASE_URL } from "../../const.ts"
 
 const viewerQuery = gql(`
@@ -34,37 +31,28 @@ export const whoamiCommand = new Command()
   .name("whoami")
   .description("Print information about the authenticated user")
   .action(async () => {
-    const mode = getAuthMode()
     try {
-      // Only suppress a failed `viewer` query once we've independently
-      // confirmed the credentials work (client-credentials token exchange).
-      let credentialsVerified = false
+      const mode = getAuthMode()
       if (mode) {
         console.log(`Auth mode: ${describeAuthMode(mode)}`)
         if (mode === "client-credentials") {
           console.log(`  Scopes: ${getResolvedScopes()}`)
-          // Verify the credentials up front so a bad client_id/secret is
-          // reported clearly instead of being masked as "no viewer" below.
-          await getClientCredentialsToken()
-          credentialsVerified = true
         }
       }
 
       const client = getGraphQLClient()
-      let viewer
-      try {
-        const result = await client.request(viewerQuery)
-        viewer = result.viewer
-      } catch (viewerError) {
-        // An OAuth app may have no associated user, but only treat that as
-        // benign once auth is confirmed; otherwise surface the real error.
-        if (credentialsVerified) {
-          console.log(
-            "  Credentials verified, but no viewer user is available for this OAuth app.",
-          )
-          return
-        }
-        throw viewerError
+      const result = await client.request(viewerQuery)
+      const viewer = result.viewer
+
+      // An OAuth app token can authenticate successfully yet have no associated
+      // user. Only that specific case (a successful request with a null viewer)
+      // is benign; any thrown error — including a 401 from a revoked cached
+      // token — falls through to handleError below rather than being masked.
+      if (!viewer) {
+        console.log(
+          "  Authenticated, but this token has no viewer user (OAuth app).",
+        )
+        return
       }
 
       const org = viewer.organization
