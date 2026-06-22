@@ -292,3 +292,32 @@ export async function getClientCredentialsToken(): Promise<string> {
   })
   return json.access_token
 }
+
+/**
+ * Evict the cached client-credentials token (memory + disk) for the current
+ * client id / secret / scopes. Call this when Linear rejects the token (401),
+ * since client-credentials tokens can be revoked before their expiry; the next
+ * getClientCredentialsToken() will mint a fresh one.
+ */
+export async function evictClientCredentialsToken(): Promise<void> {
+  cachedToken = null
+
+  const creds = getClientCredentials()
+  const path = getTokenCachePath()
+  if (!creds || !path) return
+
+  const scope = getResolvedScopes()
+  const cacheKey = `${creds.clientId}:${await fingerprint(
+    creds.clientSecret,
+  )}:${scope}`
+  try {
+    const cache = await readDiskCacheFile(path)
+    if (cache?.entries[cacheKey]) {
+      delete cache.entries[cacheKey]
+      await ensureDir(dirname(path))
+      await Deno.writeTextFile(path, JSON.stringify(cache), { mode: 0o600 })
+    }
+  } catch {
+    // Best-effort eviction.
+  }
+}

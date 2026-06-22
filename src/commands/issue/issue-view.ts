@@ -17,7 +17,7 @@ import { bold, underline } from "@std/fmt/colors"
 import { ensureDir } from "@std/fs"
 import { join } from "@std/path"
 import { getOption } from "../../config.ts"
-import { resolveAuthorization } from "../../utils/graphql.ts"
+import { authorizedFetch } from "../../utils/graphql.ts"
 import sanitize from "sanitize-filename"
 import {
   hyperlink,
@@ -571,14 +571,11 @@ async function downloadAttachments(
         // File doesn't exist, download it
       }
 
-      const headers: Record<string, string> = {}
-      if (uploadHost === LINEAR_PRIVATE_UPLOAD_HOST) {
-        // Private uploads require auth — resolve OAuth/API-key the same way the
-        // GraphQL client does so bot tokens work for downloads too.
-        headers["Authorization"] = await resolveAuthorization()
-      }
-
-      const response = await fetch(attachment.url, { headers })
+      // Private uploads require auth — authorizedFetch attaches the OAuth/API-key
+      // header (and refreshes a revoked bot token on 401). Public uploads don't.
+      const response = uploadHost === LINEAR_PRIVATE_UPLOAD_HOST
+        ? await authorizedFetch(attachment.url)
+        : await fetch(attachment.url)
       if (!response.ok) {
         throw new Error(
           `Failed to download: ${response.status} ${response.statusText}`,

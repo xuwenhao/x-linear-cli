@@ -5,7 +5,7 @@ import {
   ValidationError,
 } from "@cliffy/command"
 import denoConfig from "../../deno.json" with { type: "json" }
-import { getGraphQLEndpoint, resolveAuthorization } from "../utils/graphql.ts"
+import { authorizedFetch, getGraphQLEndpoint } from "../utils/graphql.ts"
 import {
   CliError,
   handleError,
@@ -54,13 +54,10 @@ export const apiCommand = new Command()
         options.variablesJson,
       )
 
-      // Resolve the Authorization header for whatever auth mode is configured
-      // (OAuth bearer token or personal API key); throws if nothing is set.
-      const authorization = await resolveAuthorization()
-
+      // authorizedFetch attaches the Authorization header (OAuth bearer or raw
+      // API key, throwing if nothing is configured) and refreshes on 401.
       const headers = {
         "Content-Type": "application/json",
-        Authorization: authorization,
         "User-Agent": `x-linear-cli/${denoConfig.version}`,
       }
 
@@ -95,7 +92,7 @@ async function executeSingle(
     body.variables = variables
   }
 
-  const response = await fetch(getGraphQLEndpoint(), {
+  const response = await authorizedFetch(getGraphQLEndpoint(), {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -145,7 +142,7 @@ async function executePaginated(
       body.variables = vars
     }
 
-    const response = await fetch(getGraphQLEndpoint(), {
+    const response = await authorizedFetch(getGraphQLEndpoint(), {
       method: "POST",
       headers,
       body: JSON.stringify(body),

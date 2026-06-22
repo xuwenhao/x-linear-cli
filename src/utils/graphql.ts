@@ -6,6 +6,7 @@ import denoConfig from "../../deno.json" with { type: "json" }
 import { extractGraphQLMessage, isDebugMode } from "./errors.ts"
 import { LINEAR_API_ENDPOINT } from "../const.ts"
 import {
+  evictClientCredentialsToken,
   getClientCredentialsToken,
   hasClientCredentials,
   hasPartialClientCredentials,
@@ -194,6 +195,33 @@ export function createGraphQLClient(apiKey: string): GraphQLClient {
   })
 }
 
+/**
+ * fetch() that attaches the resolved Authorization header and, for OAuth app
+ * (client-credentials) auth, evicts the cached token and retries once if Linear
+ * responds 401. Client-credentials tokens can be revoked before their 30-day
+ * expiry, and Linear documents re-fetching after a 401; this keeps every
+ * bot-auth request (GraphQL, raw api, private upload downloads) self-healing.
+ */
+export async function authorizedFetch(
+  input: string | URL | Request,
+  init: RequestInit = {},
+): Promise<Response> {
+  const headers = new Headers(init.headers)
+  headers.set("Authorization", await resolveAuthorization())
+  const res = await fetch(input, { ...init, headers })
+
+  if (
+    res.status === 401 &&
+    !Deno.env.get("LINEAR_ACCESS_TOKEN") &&
+    hasClientCredentials()
+  ) {
+    await evictClientCredentialsToken()
+    headers.set("Authorization", await resolveAuthorization())
+    return await fetch(input, { ...init, headers })
+  }
+  return res
+}
+
 export function getGraphQLClient(): GraphQLClient {
   // Fail fast with a helpful message rather than surfacing a confusing error
   // mid-request (or silently using an API key for a half-configured bot).
@@ -207,21 +235,12 @@ export function getGraphQLClient(): GraphQLClient {
     throw new Error(NO_CREDENTIALS_MESSAGE)
   }
 
-  // The Authorization header is resolved per-request so the OAuth token
-  // exchange (and its in-memory caching) can be awaited lazily.
+  // authorizedFetch resolves the Authorization header per-request (so the OAuth
+  // token exchange + caching are awaited lazily) and handles 401 token refresh.
   return new GraphQLClient(getGraphQLEndpoint(), {
     headers: {
       "User-Agent": `${USER_AGENT_PRODUCT}/${denoConfig.version}`,
     },
-    requestMiddleware: async (request) => {
-      const authorization = await resolveAuthorization()
-      // `request.headers` exists at runtime, but graphql-request's middleware
-      // type doesn't reliably expose it across Deno/TS versions — cast to read it.
-      const headers = new Headers(
-        (request as { headers?: HeadersInit }).headers,
-      )
-      headers.set("Authorization", authorization)
-      return { ...request, headers }
-    },
+    fetch: authorizedFetch,
   })
 }
