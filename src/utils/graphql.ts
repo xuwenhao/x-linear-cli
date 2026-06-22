@@ -67,7 +67,7 @@ export function logClientError(error: ClientError): void {
 /**
  * Get the resolved API key following the precedence chain:
  * 1. LINEAR_API_KEY env var (conflicts with --workspace)
- * 2. api_key in project config
+ * 2. api_key in project config (conflicts with --workspace)
  * 3. --workspace flag → credentials lookup
  * 4. Project's workspace config → credentials lookup
  * 5. default workspace from credentials file
@@ -91,6 +91,15 @@ export function getResolvedApiKey(): string | undefined {
 
   // 2: api_key in project config
   const configApiKey = getOption("api_key")
+  if (configApiKey && cliWorkspace) {
+    // Mirror the LINEAR_API_KEY conflict: an explicit api_key fixes the
+    // credential, so --workspace can't select a different one. Erroring avoids
+    // silently ignoring the requested workspace.
+    throw new Error(
+      "Cannot use --workspace flag when api_key is set in .linear.toml. " +
+        "Remove api_key from the config or drop the --workspace flag.",
+    )
+  }
   if (configApiKey) {
     return configApiKey
   }
