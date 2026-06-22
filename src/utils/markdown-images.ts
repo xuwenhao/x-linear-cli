@@ -12,7 +12,7 @@ import {
   LINEAR_PRIVATE_UPLOAD_HOST,
   LINEAR_UPLOAD_HOSTNAMES,
 } from "../const.ts"
-import { getResolvedApiKey } from "./graphql.ts"
+import { resolveAuthorization } from "./graphql.ts"
 
 export const IMAGE_CACHE_DIR = join(
   Deno.env.get("TMPDIR") || Deno.env.get("TMP") || Deno.env.get("TEMP") ||
@@ -130,10 +130,9 @@ async function downloadImage(
 
   const headers: Record<string, string> = {}
   if (getLinearUploadHost(url) === LINEAR_PRIVATE_UPLOAD_HOST) {
-    const apiKey = getResolvedApiKey()
-    if (apiKey) {
-      headers["Authorization"] = apiKey
-    }
+    // Private uploads require auth — use the same OAuth/API-key resolution as
+    // the GraphQL client so bot tokens work here too.
+    headers["Authorization"] = await resolveAuthorization()
   }
 
   const response = await fetch(url, { headers })

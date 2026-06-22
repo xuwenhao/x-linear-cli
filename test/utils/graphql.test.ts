@@ -1,4 +1,9 @@
-import { assertEquals, assertStringIncludes, assertThrows } from "@std/assert"
+import {
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+  assertThrows,
+} from "@std/assert"
 import { setCliWorkspace } from "../../src/config.ts"
 import {
   getAuthMode,
@@ -123,6 +128,25 @@ Deno.test("resolveAuthorization - api key is sent raw (no Bearer prefix)", async
     assertEquals(await resolveAuthorization(), "lin_api_rawkey")
   } finally {
     clearAuthEnv()
+  }
+})
+
+Deno.test("resolveAuthorization - partial client credentials are rejected, not downgraded to API key", async () => {
+  for (const present of ["LINEAR_CLIENT_ID", "LINEAR_CLIENT_SECRET"]) {
+    clearAuthEnv()
+    // Even with an API key available, a half-configured bot must error rather
+    // than silently run as a personal user.
+    Deno.env.set("LINEAR_API_KEY", "lin_api_rawkey")
+    Deno.env.set(present, "only-one")
+    try {
+      await assertRejects(
+        () => resolveAuthorization(),
+        Error,
+        "Incomplete OAuth credentials",
+      )
+    } finally {
+      clearAuthEnv()
+    }
   }
 })
 

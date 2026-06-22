@@ -5,7 +5,7 @@ import {
   ValidationError,
 } from "@cliffy/command"
 import denoConfig from "../../deno.json" with { type: "json" }
-import { getGraphQLEndpoint, getResolvedApiKey } from "../utils/graphql.ts"
+import { getGraphQLEndpoint, resolveAuthorization } from "../utils/graphql.ts"
 import {
   CliError,
   handleError,
@@ -54,21 +54,14 @@ export const apiCommand = new Command()
         options.variablesJson,
       )
 
-      const apiKey = getResolvedApiKey()
-      if (!apiKey) {
-        throw new AppValidationError(
-          "No API key configured",
-          {
-            suggestion:
-              "Set LINEAR_API_KEY, add api_key to .linear.toml, or run `linear auth login`.",
-          },
-        )
-      }
+      // Resolve the Authorization header for whatever auth mode is configured
+      // (OAuth bearer token or personal API key); throws if nothing is set.
+      const authorization = await resolveAuthorization()
 
       const headers = {
         "Content-Type": "application/json",
-        Authorization: apiKey,
-        "User-Agent": `schpet-linear-cli/${denoConfig.version}`,
+        Authorization: authorization,
+        "User-Agent": `x-linear-cli/${denoConfig.version}`,
       }
 
       if (options.paginate) {
@@ -310,7 +303,7 @@ async function resolveQuery(positionalArg?: string): Promise<string> {
 
   throw new AppValidationError("No query provided", {
     suggestion:
-      "Provide a query as an argument: linear api '{ viewer { id } }'\n  Or pipe from stdin: echo '{ viewer { id } }' | linear api",
+      "Provide a query as an argument: x-linear api '{ viewer { id } }'\n  Or pipe from stdin: echo '{ viewer { id } }' | x-linear api",
   })
 }
 

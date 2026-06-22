@@ -70,6 +70,40 @@ Deno.test("disk cache - token is reused across processes", async () => {
   })
 })
 
+Deno.test("disk cache - rotating the client secret triggers a fresh exchange", async () => {
+  const dir = await Deno.makeTempDir()
+  Deno.env.set("LINEAR_TOKEN_CACHE_DIR", dir)
+  Deno.env.delete("LINEAR_NO_TOKEN_CACHE")
+  Deno.env.set("LINEAR_CLIENT_ID", "rotate-id")
+  Deno.env.set("LINEAR_CLIENT_SECRET", "secret-v1")
+  Deno.env.delete("LINEAR_OAUTH_SCOPES")
+  resetTokenCache()
+  const f = mockTokenFetch("tok", 3600)
+  try {
+    await getClientCredentialsToken()
+    assertEquals(f.calls(), 1)
+
+    // Same secret across a fresh process → served from disk.
+    resetTokenCache()
+    await getClientCredentialsToken()
+    assertEquals(f.calls(), 1)
+
+    // Rotate the secret → different fingerprint in the cache key → new exchange.
+    Deno.env.set("LINEAR_CLIENT_SECRET", "secret-v2")
+    resetTokenCache()
+    await getClientCredentialsToken()
+    assertEquals(f.calls(), 2)
+  } finally {
+    f.restore()
+    await clearTokenCache()
+    await Deno.remove(dir, { recursive: true }).catch(() => {})
+    Deno.env.delete("LINEAR_TOKEN_CACHE_DIR")
+    Deno.env.delete("LINEAR_CLIENT_ID")
+    Deno.env.delete("LINEAR_CLIENT_SECRET")
+    resetTokenCache()
+  }
+})
+
 Deno.test("disk cache - expired disk token triggers a fresh exchange", async () => {
   await withCacheDir("expired-id", async () => {
     const f = mockTokenFetch("old-token", 0) // already within the skew window

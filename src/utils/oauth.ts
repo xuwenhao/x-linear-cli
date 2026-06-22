@@ -57,6 +57,18 @@ export function hasClientCredentials(): boolean {
   return getClientCredentials() !== undefined
 }
 
+/**
+ * Whether exactly one of LINEAR_CLIENT_ID / LINEAR_CLIENT_SECRET is set. This is
+ * almost always a misconfiguration: callers should treat it as an error rather
+ * than silently falling back to a personal API key (which would run as a human
+ * user instead of the intended bot).
+ */
+export function hasPartialClientCredentials(): boolean {
+  const hasId = Boolean(Deno.env.get("LINEAR_CLIENT_ID"))
+  const hasSecret = Boolean(Deno.env.get("LINEAR_CLIENT_SECRET"))
+  return hasId !== hasSecret
+}
+
 /** The OAuth scopes that will be requested (overridable via env). */
 export function getResolvedScopes(): string {
   return Deno.env.get("LINEAR_OAUTH_SCOPES") || DEFAULT_LINEAR_OAUTH_SCOPES
@@ -179,8 +191,22 @@ export async function clearTokenCache(): Promise<void> {
 }
 
 /**
+ * Short, non-reversible fingerprint of a value (first 8 bytes of its SHA-256).
+ * Used to scope cached tokens to a specific client secret without storing it.
+ */
+async function fingerprint(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value),
+  )
+  return Array.from(new Uint8Array(digest).slice(0, 8))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+}
+
+/**
  * Exchange client credentials for an app access token, caching it in memory
- * until shortly before it expires.
+ * and on disk until shortly before it expires.
  */
 export async function getClientCredentialsToken(): Promise<string> {
   const creds = getClientCredentials()
@@ -191,7 +217,11 @@ export async function getClientCredentialsToken(): Promise<string> {
   }
 
   const scope = getResolvedScopes()
-  const cacheKey = `${creds.clientId}:${scope}`
+  // Include a fingerprint of the secret in the cache key so rotating the client
+  // secret (which revokes existing tokens) doesn't keep serving a stale token.
+  const cacheKey = `${creds.clientId}:${await fingerprint(
+    creds.clientSecret,
+  )}:${scope}`
   const now = Date.now()
 
   // L1: in-memory cache (same process).

@@ -5,7 +5,11 @@ import { getCredentialApiKey } from "../credentials.ts"
 import denoConfig from "../../deno.json" with { type: "json" }
 import { extractGraphQLMessage, isDebugMode } from "./errors.ts"
 import { LINEAR_API_ENDPOINT } from "../const.ts"
-import { getClientCredentialsToken, hasClientCredentials } from "./oauth.ts"
+import {
+  getClientCredentialsToken,
+  hasClientCredentials,
+  hasPartialClientCredentials,
+} from "./oauth.ts"
 
 export { ClientError }
 
@@ -24,6 +28,10 @@ const NO_CREDENTIALS_MESSAGE =
   "No Linear credentials configured. Set LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET " +
   "to authenticate as an OAuth app (bot), or set LINEAR_ACCESS_TOKEN / LINEAR_API_KEY, " +
   "add api_key to .linear.toml, or run `x-linear auth login`."
+
+const PARTIAL_CREDENTIALS_MESSAGE =
+  "Incomplete OAuth credentials: set both LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET " +
+  "(or unset both). Refusing to fall back to a personal API key for a bot command."
 
 // Re-export error utilities for backward compatibility
 export { isClientError } from "./errors.ts"
@@ -160,6 +168,11 @@ export async function resolveAuthorization(): Promise<string> {
     return toBearer(await getClientCredentialsToken())
   }
 
+  // Don't silently downgrade a half-configured bot to a personal API key.
+  if (hasPartialClientCredentials()) {
+    throw new Error(PARTIAL_CREDENTIALS_MESSAGE)
+  }
+
   const apiKey = getResolvedApiKey()
   if (!apiKey) {
     throw new Error(NO_CREDENTIALS_MESSAGE)
@@ -182,8 +195,11 @@ export function createGraphQLClient(apiKey: string): GraphQLClient {
 }
 
 export function getGraphQLClient(): GraphQLClient {
-  // Fail fast with a helpful message if nothing is configured, rather than
-  // surfacing a confusing error mid-request.
+  // Fail fast with a helpful message rather than surfacing a confusing error
+  // mid-request (or silently using an API key for a half-configured bot).
+  if (hasPartialClientCredentials()) {
+    throw new Error(PARTIAL_CREDENTIALS_MESSAGE)
+  }
   if (getAuthMode() === undefined) {
     throw new Error(NO_CREDENTIALS_MESSAGE)
   }

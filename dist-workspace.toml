@@ -9,11 +9,11 @@ version = "2.0.0"
 license = "MIT"
 repository = "https://github.com/schpet/linear-cli"
 homepage = "https://github.com/schpet/linear-cli"
-binaries = ["linear"]
+binaries = ["x-linear"]
 build-command = [
     "sh",
     "-c",
-    "deno compile --target=$CARGO_DIST_TARGET -o linear --allow-all --quiet src/main.ts",
+    "deno compile --target=$CARGO_DIST_TARGET -o x-linear --allow-all --quiet src/main.ts",
 ]
 
 # Config for 'dist'
