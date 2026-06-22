@@ -18,12 +18,12 @@ Options:
 
 Commands:
 
-  login                 - Add a workspace credential                                 
-  logout   [workspace]  - Remove a workspace credential                              
-  list                  - List configured workspaces                                 
-  default  [workspace]  - Set the default workspace                                  
-  token                 - Print the configured token (API key, or OAuth access token)
-  whoami                - Print information about the authenticated user             
+  login                 - Add a workspace credential                                               
+  logout   [workspace]  - Remove a workspace credential                                            
+  list                  - List configured workspaces                                               
+  default  [workspace]  - Set the default workspace                                                
+  token                 - Print the Authorization header value (API key, or `Bearer <OAuth token>`)
+  whoami                - Print information about the authenticated user                           
   migrate               - Migrate plaintext credentials to system keyring
 ```
 
@@ -102,14 +102,14 @@ Options:
 
 ### token
 
-> Print the configured token (API key, or OAuth access token)
+> Print the Authorization header value (API key, or `Bearer <OAuth token>`)
 
 ```
 Usage:   x-linear auth token
 
 Description:
 
-  Print the configured token (API key, or OAuth access token)
+  Print the Authorization header value (API key, or `Bearer <OAuth token>`)
 
 Options:
 
