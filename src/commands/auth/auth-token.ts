@@ -13,6 +13,15 @@ export const tokenCommand = new Command()
   .description("Print the configured token (API key, or OAuth access token)")
   .action(async () => {
     try {
+      const mode = getAuthMode()
+
+      // A pre-fetched access token has the highest precedence; print it before
+      // anything else (so it works even if a stray LINEAR_CLIENT_ID is set).
+      if (mode === "access-token") {
+        console.log(Deno.env.get("LINEAR_ACCESS_TOKEN"))
+        return
+      }
+
       // A half-configured bot must not silently print a personal API key.
       if (hasPartialClientCredentials()) {
         throw new AuthError("Incomplete OAuth credentials", {
@@ -21,17 +30,11 @@ export const tokenCommand = new Command()
         })
       }
 
-      const mode = getAuthMode()
-
       // For OAuth app (bot) auth, print the access token so it can be reused
       // (e.g. `Authorization: Bearer <token>` with curl).
       if (mode === "client-credentials") {
         const token = await getClientCredentialsToken()
         console.log(token)
-        return
-      }
-      if (mode === "access-token") {
-        console.log(Deno.env.get("LINEAR_ACCESS_TOKEN"))
         return
       }
 

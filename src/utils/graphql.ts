@@ -197,7 +197,10 @@ export function createGraphQLClient(apiKey: string): GraphQLClient {
 export function getGraphQLClient(): GraphQLClient {
   // Fail fast with a helpful message rather than surfacing a confusing error
   // mid-request (or silently using an API key for a half-configured bot).
-  if (hasPartialClientCredentials()) {
+  // A pre-fetched access token outranks a partial client-credentials setup, so
+  // only reject the latter when no access token is present (matches the
+  // precedence in resolveAuthorization).
+  if (!Deno.env.get("LINEAR_ACCESS_TOKEN") && hasPartialClientCredentials()) {
     throw new Error(PARTIAL_CREDENTIALS_MESSAGE)
   }
   if (getAuthMode() === undefined) {

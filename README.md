@@ -41,52 +41,20 @@ it aims to be a complement to the web and desktop apps that lets you stay on the
 
 ## install
 
-### homebrew
+> This is a **fork** of [schpet/linear-cli](https://github.com/schpet/linear-cli). The upstream published packages (`@schpet/linear-cli` on npm/jsr, `schpet/tap/linear` on Homebrew) install a `linear` binary **without** the OAuth/bot auth this fork adds. To get the `x-linear` binary with bot auth, install this fork from source.
 
-```
-brew install schpet/tap/linear
-```
+### from source
 
-### deno via jsr
+requires [Deno](https://deno.com):
 
 ```bash
-deno install -A --reload -f -g -n linear jsr:@schpet/linear-cli
+git clone https://github.com/xuwenhao/x-linear-cli
+cd x-linear-cli
+deno task install   # installs the `x-linear` command globally
+x-linear --version
 ```
 
-### npm / bun / pnpm
-
-install as a dev dependency to pin a version in your project:
-
-```bash
-npm install -D @schpet/linear-cli
-# or
-bun add -D @schpet/linear-cli
-# or
-pnpm add -D @schpet/linear-cli
-```
-
-then run via your package manager:
-
-```bash
-npx linear issue list
-bunx linear issue list
-```
-
-> **note:** this package ships pre-built binaries
-
-package on npm: [@schpet/linear-cli](https://www.npmjs.com/package/@schpet/linear-cli)
-
-### binaries
-
-https://github.com/schpet/linear-cli/releases/latest
-
-### local dev
-
-```bash
-git clone https://github.com/schpet/linear-cli
-cd linear-cli
-deno task install
-```
+to update later, run `git pull` and re-run `deno task install`.
 
 ## setup
 
