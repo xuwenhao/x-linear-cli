@@ -5,7 +5,7 @@ members = ["dist:."]
 [package]
 name = "x-linear"
 description = "CLI tool for linear.app with OAuth client-credentials (bot) auth; a fork of schpet/linear-cli"
-version = "2.0.0"
+version = "2.1.0"
 license = "MIT"
 repository = "https://github.com/xuwenhao/x-linear-cli"
 homepage = "https://github.com/xuwenhao/x-linear-cli"
