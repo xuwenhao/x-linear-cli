@@ -46,7 +46,7 @@ export const configCommand = new Command()
         const workspaces = getWorkspaces()
         if (workspaces.length === 0) {
           throw new AuthError("No authentication configured", {
-            suggestion: "Run `linear auth login` to add a workspace.",
+            suggestion: "Run `x-linear auth login` to add a workspace.",
           })
         }
 
@@ -131,7 +131,7 @@ export const configCommand = new Command()
         filePath = "./.linear.toml"
       }
 
-      const tomlContent = `# linear cli
+      const tomlContent = `# x-linear cli
 # https://github.com/schpet/linear-cli
 
 workspace = "${workspace}"

@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear project
+Usage:   x-linear project
 
 Description:
 
@@ -32,7 +32,7 @@ Commands:
 > List projects
 
 ```
-Usage:   linear project list
+Usage:   x-linear project list
 
 Description:
 
@@ -55,7 +55,7 @@ Options:
 > View project details
 
 ```
-Usage:   linear project view <projectId>
+Usage:   x-linear project view <projectId>
 
 Description:
 
@@ -74,7 +74,7 @@ Options:
 > Create a new Linear project
 
 ```
-Usage:   linear project create
+Usage:   x-linear project create
 
 Description:
 
@@ -101,7 +101,7 @@ Options:
 > Update a Linear project
 
 ```
-Usage:   linear project update <projectId>
+Usage:   x-linear project update <projectId>
 
 Description:
 
@@ -125,7 +125,7 @@ Options:
 > Delete (trash) a Linear project
 
 ```
-Usage:   linear project delete <projectId>
+Usage:   x-linear project delete <projectId>
 
 Description:
 

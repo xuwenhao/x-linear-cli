@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear label
+Usage:   x-linear label
 
 Description:
 
@@ -30,7 +30,7 @@ Commands:
 > List issue labels
 
 ```
-Usage:   linear label list
+Usage:   x-linear label list
 
 Description:
 
@@ -50,7 +50,7 @@ Options:
 > Create a new issue label
 
 ```
-Usage:   linear label create
+Usage:   x-linear label create
 
 Description:
 
@@ -72,7 +72,7 @@ Options:
 > Delete an issue label
 
 ```
-Usage:   linear label delete <nameOrId>
+Usage:   x-linear label delete <nameOrId>
 
 Description:
 

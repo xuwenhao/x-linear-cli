@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear project-update
+Usage:   x-linear project-update
 
 Description:
 
@@ -29,7 +29,7 @@ Commands:
 > Create a new status update for a project
 
 ```
-Usage:   linear project-update create <projectId>
+Usage:   x-linear project-update create <projectId>
 
 Description:
 
@@ -50,7 +50,7 @@ Options:
 > List status updates for a project
 
 ```
-Usage:   linear project-update list <projectId>
+Usage:   x-linear project-update list <projectId>
 
 Description:
 

@@ -79,7 +79,7 @@ export class AuthError extends CliError {
   constructor(message: string, options?: { suggestion?: string }) {
     super(message, {
       suggestion: options?.suggestion ??
-        "Run `linear auth login` to authenticate.",
+        "Run `x-linear auth login` to authenticate.",
       ...options,
     })
     this.name = "AuthError"

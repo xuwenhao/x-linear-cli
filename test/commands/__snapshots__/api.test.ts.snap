@@ -49,8 +49,8 @@ stdout:
 ""
 stderr:
 "✗ API request failed: No query provided
-  Provide a query as an argument: linear api '{ viewer { id } }'
-  Or pipe from stdin: echo '{ viewer { id } }' | linear api
+  Provide a query as an argument: x-linear api '{ viewer { id } }'
+  Or pipe from stdin: echo '{ viewer { id } }' | x-linear api
 "
 `;
 
@@ -111,8 +111,7 @@ snapshot[`API Command - No API Key 1`] = `
 stdout:
 ""
 stderr:
-"✗ API request failed: No API key configured
-  Set LINEAR_API_KEY, add api_key to .linear.toml, or run \`linear auth login\`.
+"✗ API request failed: No Linear credentials configured. Set LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET to authenticate as an OAuth app (bot), or set LINEAR_ACCESS_TOKEN / LINEAR_API_KEY, add api_key to .linear.toml, or run \`x-linear auth login\`.
 "
 `;
 

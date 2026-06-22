@@ -93,7 +93,7 @@ function parseKeyringCredentials(parsed: Record<string, unknown>): Credentials {
     console.error(
       yellow(
         `Warning: Default workspace "${defaultWs}" is not in the workspaces list. ` +
-          `Run \`linear auth default <workspace>\` to set a valid default.`,
+          `Run \`x-linear auth default <workspace>\` to set a valid default.`,
       ),
     )
   }
@@ -113,7 +113,7 @@ async function populateKeyringCache(workspaces: string[]): Promise<void> {
       } else {
         console.error(
           yellow(
-            `Warning: No keyring entry for workspace "${ws}". Run \`linear auth login\` to re-authenticate.`,
+            `Warning: No keyring entry for workspace "${ws}". Run \`x-linear auth login\` to re-authenticate.`,
           ),
         )
       }
@@ -156,7 +156,7 @@ export async function loadCredentials(): Promise<Credentials> {
   } catch (error) {
     throw new Error(
       `Failed to parse credentials file at ${path}. The file may be corrupted.\n` +
-        `You can delete it and re-authenticate with \`linear auth login\`.\n` +
+        `You can delete it and re-authenticate with \`x-linear auth login\`.\n` +
         `Parse error: ${errorDetail(error)}`,
     )
   }

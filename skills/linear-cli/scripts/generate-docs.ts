@@ -7,6 +7,9 @@
 
 import { dirname, join } from "@std/path"
 
+/** The installed CLI binary name (see `install` task in deno.json). */
+const BIN = "x-linear"
+
 const SCRIPT_DIR = dirname(new URL(import.meta.url).pathname)
 const SKILL_DIR = join(SCRIPT_DIR, "..")
 const REFERENCES_DIR = join(SKILL_DIR, "references")
@@ -85,7 +88,7 @@ function parseCommands(helpText: string): string[] {
 }
 
 async function getCommandHelp(cmdPath: string[]): Promise<string> {
-  const result = await run(["linear", ...cmdPath, "--help"])
+  const result = await run([BIN, ...cmdPath, "--help"])
   if (!result.success) {
     return result.stderr || "Command help not available"
   }
@@ -114,10 +117,10 @@ async function discoverCommand(cmdPath: string[]): Promise<CommandInfo> {
 
 function formatCommandMarkdown(cmd: CommandInfo, depth = 0): string {
   const lines: string[] = []
-  const cmdName = cmd.name.replace(/^linear /, "")
+  const cmdName = cmd.name.replace(new RegExp(`^${BIN} `), "")
   const heading = depth === 0 ? "#" : "##"
 
-  lines.push(`${heading} linear ${cmdName}`)
+  lines.push(`${heading} ${BIN} ${cmdName}`)
   lines.push("")
   lines.push("```")
   lines.push(cmd.help)
@@ -134,7 +137,7 @@ function formatCommandMarkdown(cmd: CommandInfo, depth = 0): string {
 
 function generateCommandDoc(cmd: CommandInfo): string {
   const lines: string[] = []
-  const cmdName = cmd.name.replace(/^linear /, "")
+  const cmdName = cmd.name.replace(new RegExp(`^${BIN} `), "")
 
   lines.push(`# ${cmdName}`)
   lines.push("")
@@ -188,15 +191,15 @@ function generateCommandDoc(cmd: CommandInfo): string {
 async function main() {
   console.log("Generating Linear CLI documentation...")
 
-  // Check linear is available
-  const versionResult = await run(["linear", "--version"])
+  // Check the CLI is available
+  const versionResult = await run([BIN, "--version"])
   if (!versionResult.success) {
-    console.error("Error: linear CLI not found. Is it installed?")
+    console.error(`Error: ${BIN} CLI not found. Is it installed?`)
     Deno.exit(1)
   }
   console.log(`Linear CLI: ${stripAnsi(versionResult.stdout)}`)
 
-  // Auto-discover top-level commands from `linear --help`
+  // Auto-discover top-level commands from the CLI's --help
   console.log("Discovering commands...")
   const topLevelHelp = await getCommandHelp([])
   const topLevelCommands = parseCommands(topLevelHelp).filter(
@@ -233,7 +236,7 @@ async function main() {
 
   // Write command documentation
   for (const cmd of commands) {
-    const filename = `${cmd.name.replace(/^linear /, "")}.md`
+    const filename = `${cmd.name.replace(new RegExp(`^${BIN} `), "")}.md`
     const filepath = join(REFERENCES_DIR, filename)
     const content = generateCommandDoc(cmd)
     await Deno.writeTextFile(filepath, content + "\n")
@@ -275,7 +278,7 @@ function generateIndex(commands: CommandInfo[]): string {
   lines.push("")
 
   for (const cmd of commands) {
-    const cmdName = cmd.name.replace(/^linear /, "")
+    const cmdName = cmd.name.replace(new RegExp(`^${BIN} `), "")
     lines.push(`- [${cmdName}](./${cmdName}.md) - ${cmd.description}`)
   }
 
@@ -284,15 +287,15 @@ function generateIndex(commands: CommandInfo[]): string {
   lines.push("")
   lines.push("```bash")
   lines.push("# Get help for any command")
-  lines.push("linear <command> --help")
-  lines.push("linear <command> <subcommand> --help")
+  lines.push(`${BIN} <command> --help`)
+  lines.push(`${BIN} <command> <subcommand> --help`)
   lines.push("```")
 
   return lines.join("\n") + "\n"
 }
 
 function flattenCommandPaths(cmd: CommandInfo): string[] {
-  const lines = [`linear ${cmd.name}`]
+  const lines = [`${BIN} ${cmd.name}`]
 
   for (const sub of cmd.subcommands) {
     lines.push(...flattenCommandPaths(sub))

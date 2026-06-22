@@ -1,6 +1,28 @@
-import { assertEquals, assertStringIncludes, assertThrows } from "@std/assert"
+import {
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+  assertThrows,
+} from "@std/assert"
 import { setCliWorkspace } from "../../src/config.ts"
-import { getResolvedApiKey } from "../../src/utils/graphql.ts"
+import {
+  getAuthMode,
+  getResolvedApiKey,
+  resolveAuthorization,
+} from "../../src/utils/graphql.ts"
+import { resetTokenCache } from "../../src/utils/oauth.ts"
+
+function clearAuthEnv() {
+  Deno.env.delete("LINEAR_ACCESS_TOKEN")
+  Deno.env.delete("LINEAR_CLIENT_ID")
+  Deno.env.delete("LINEAR_CLIENT_SECRET")
+  Deno.env.delete("LINEAR_API_KEY")
+  Deno.env.delete("LINEAR_TOKEN_CACHE_DIR")
+  // Keep the disk cache out of these tests (they hit the real fetch mock).
+  Deno.env.set("LINEAR_NO_TOKEN_CACHE", "1")
+  setCliWorkspace(undefined)
+  resetTokenCache()
+}
 
 Deno.test("getResolvedApiKey - errors when --workspace not found in credentials", () => {
   // Setup - use a workspace name that definitely doesn't exist
@@ -51,5 +73,123 @@ Deno.test("getResolvedApiKey - returns LINEAR_API_KEY when set without --workspa
   } finally {
     // Cleanup
     Deno.env.delete("LINEAR_API_KEY")
+  }
+})
+
+Deno.test("getAuthMode - access token takes precedence over client creds and api key", () => {
+  clearAuthEnv()
+  Deno.env.set("LINEAR_ACCESS_TOKEN", "tok")
+  Deno.env.set("LINEAR_CLIENT_ID", "id")
+  Deno.env.set("LINEAR_CLIENT_SECRET", "secret")
+  Deno.env.set("LINEAR_API_KEY", "key")
+  try {
+    assertEquals(getAuthMode(), "access-token")
+  } finally {
+    clearAuthEnv()
+  }
+})
+
+Deno.test("getAuthMode - client credentials take precedence over api key", () => {
+  clearAuthEnv()
+  Deno.env.set("LINEAR_CLIENT_ID", "id")
+  Deno.env.set("LINEAR_CLIENT_SECRET", "secret")
+  Deno.env.set("LINEAR_API_KEY", "key")
+  try {
+    assertEquals(getAuthMode(), "client-credentials")
+  } finally {
+    clearAuthEnv()
+  }
+})
+
+Deno.test("getAuthMode - api key when only LINEAR_API_KEY is set", () => {
+  clearAuthEnv()
+  Deno.env.set("LINEAR_API_KEY", "key")
+  try {
+    assertEquals(getAuthMode(), "api-key")
+  } finally {
+    clearAuthEnv()
+  }
+})
+
+Deno.test("resolveAuthorization - access token is sent as Bearer", async () => {
+  clearAuthEnv()
+  Deno.env.set("LINEAR_ACCESS_TOKEN", "abc123")
+  try {
+    assertEquals(await resolveAuthorization(), "Bearer abc123")
+  } finally {
+    clearAuthEnv()
+  }
+})
+
+Deno.test("resolveAuthorization - api key is sent raw (no Bearer prefix)", async () => {
+  clearAuthEnv()
+  Deno.env.set("LINEAR_API_KEY", "lin_api_rawkey")
+  try {
+    assertEquals(await resolveAuthorization(), "lin_api_rawkey")
+  } finally {
+    clearAuthEnv()
+  }
+})
+
+Deno.test("resolveAuthorization - rejects --workspace combined with OAuth env auth", async () => {
+  for (const envVar of ["LINEAR_ACCESS_TOKEN", "LINEAR_CLIENT_ID"]) {
+    clearAuthEnv()
+    if (envVar === "LINEAR_CLIENT_ID") {
+      Deno.env.set("LINEAR_CLIENT_ID", "id")
+      Deno.env.set("LINEAR_CLIENT_SECRET", "secret")
+    } else {
+      Deno.env.set("LINEAR_ACCESS_TOKEN", "tok")
+    }
+    setCliWorkspace("some-workspace")
+    try {
+      await assertRejects(
+        () => resolveAuthorization(),
+        Error,
+        "Cannot use --workspace with OAuth env auth",
+      )
+    } finally {
+      clearAuthEnv()
+    }
+  }
+})
+
+Deno.test("resolveAuthorization - partial client credentials are rejected, not downgraded to API key", async () => {
+  for (const present of ["LINEAR_CLIENT_ID", "LINEAR_CLIENT_SECRET"]) {
+    clearAuthEnv()
+    // Even with an API key available, a half-configured bot must error rather
+    // than silently run as a personal user.
+    Deno.env.set("LINEAR_API_KEY", "lin_api_rawkey")
+    Deno.env.set(present, "only-one")
+    try {
+      await assertRejects(
+        () => resolveAuthorization(),
+        Error,
+        "Incomplete OAuth credentials",
+      )
+    } finally {
+      clearAuthEnv()
+    }
+  }
+})
+
+Deno.test("resolveAuthorization - client credentials exchanged then sent as Bearer", async () => {
+  clearAuthEnv()
+  Deno.env.set("LINEAR_CLIENT_ID", "id")
+  Deno.env.set("LINEAR_CLIENT_SECRET", "secret")
+
+  const original = globalThis.fetch
+  globalThis.fetch = (() =>
+    Promise.resolve(
+      new Response(
+        JSON.stringify({ access_token: "exchanged-token", expires_in: 3600 }),
+        { status: 200 },
+      ),
+    )) as typeof fetch
+
+  try {
+    assertEquals(await resolveAuthorization(), "Bearer exchanged-token")
+  } finally {
+    globalThis.fetch = original
+    clearAuthEnv()
   }
 })

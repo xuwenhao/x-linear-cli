@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear document
+Usage:   x-linear document
 
 Description:
 
@@ -32,7 +32,7 @@ Commands:
 > List documents
 
 ```
-Usage:   linear document list
+Usage:   x-linear document list
 
 Description:
 
@@ -53,7 +53,7 @@ Options:
 > View a document's content
 
 ```
-Usage:   linear document view <id>
+Usage:   x-linear document view <id>
 
 Description:
 
@@ -61,11 +61,12 @@ Description:
 
 Options:
 
-  -h, --help           - Show this help.                        
-  --workspace  <slug>  - Target workspace (uses credentials)    
-  --raw                - Output raw markdown without rendering  
-  -w, --web            - Open document in browser               
-  --json               - Output full document as JSON
+  -h, --help             - Show this help.                                
+  --workspace    <slug>  - Target workspace (uses credentials)            
+  --raw                  - Output raw markdown without rendering          
+  -w, --web              - Open document in browser                       
+  --json                 - Output full document as JSON                   
+  --no-download          - Keep remote URLs instead of downloading files
 ```
 
 ### create
@@ -73,7 +74,7 @@ Options:
 > Create a new document
 
 ```
-Usage:   linear document create
+Usage:   x-linear document create
 
 Description:
 
@@ -97,7 +98,7 @@ Options:
 > Update an existing document
 
 ```
-Usage:   linear document update <documentId>
+Usage:   x-linear document update <documentId>
 
 Description:
 
@@ -119,7 +120,7 @@ Options:
 > Delete a document (moves to trash)
 
 ```
-Usage:   linear document delete [documentId]
+Usage:   x-linear document delete [documentId]
 
 Description:
 

@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear schema
+Usage:   x-linear schema
 
 Description:
 

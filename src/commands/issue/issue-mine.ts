@@ -161,7 +161,7 @@ export const mineCommand = new Command()
             `${flag} has been removed from 'issue mine'`,
             {
               suggestion:
-                `Use 'linear issue query ${flag}' for assignee filtering.`,
+                `Use 'x-linear issue query ${flag}' for assignee filtering.`,
             },
           )
         }

@@ -5,7 +5,7 @@ import {
   ValidationError,
 } from "@cliffy/command"
 import denoConfig from "../../deno.json" with { type: "json" }
-import { getGraphQLEndpoint, getResolvedApiKey } from "../utils/graphql.ts"
+import { authorizedFetch, getGraphQLEndpoint } from "../utils/graphql.ts"
 import {
   CliError,
   handleError,
@@ -54,21 +54,11 @@ export const apiCommand = new Command()
         options.variablesJson,
       )
 
-      const apiKey = getResolvedApiKey()
-      if (!apiKey) {
-        throw new AppValidationError(
-          "No API key configured",
-          {
-            suggestion:
-              "Set LINEAR_API_KEY, add api_key to .linear.toml, or run `linear auth login`.",
-          },
-        )
-      }
-
+      // authorizedFetch attaches the Authorization header (OAuth bearer or raw
+      // API key, throwing if nothing is configured) and refreshes on 401.
       const headers = {
         "Content-Type": "application/json",
-        Authorization: apiKey,
-        "User-Agent": `schpet-linear-cli/${denoConfig.version}`,
+        "User-Agent": `x-linear-cli/${denoConfig.version}`,
       }
 
       if (options.paginate) {
@@ -102,7 +92,7 @@ async function executeSingle(
     body.variables = variables
   }
 
-  const response = await fetch(getGraphQLEndpoint(), {
+  const response = await authorizedFetch(getGraphQLEndpoint(), {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -152,7 +142,7 @@ async function executePaginated(
       body.variables = vars
     }
 
-    const response = await fetch(getGraphQLEndpoint(), {
+    const response = await authorizedFetch(getGraphQLEndpoint(), {
       method: "POST",
       headers,
       body: JSON.stringify(body),
@@ -310,7 +300,7 @@ async function resolveQuery(positionalArg?: string): Promise<string> {
 
   throw new AppValidationError("No query provided", {
     suggestion:
-      "Provide a query as an argument: linear api '{ viewer { id } }'\n  Or pipe from stdin: echo '{ viewer { id } }' | linear api",
+      "Provide a query as an argument: x-linear api '{ viewer { id } }'\n  Or pipe from stdin: echo '{ viewer { id } }' | x-linear api",
   })
 }
 

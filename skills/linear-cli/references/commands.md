@@ -21,6 +21,6 @@
 
 ```bash
 # Get help for any command
-linear <command> --help
-linear <command> <subcommand> --help
+x-linear <command> --help
+x-linear <command> <subcommand> --help
 ```

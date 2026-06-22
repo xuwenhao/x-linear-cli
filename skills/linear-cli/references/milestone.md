@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear milestone
+Usage:   x-linear milestone
 
 Description:
 
@@ -32,7 +32,7 @@ Commands:
 > List milestones for a project
 
 ```
-Usage:   linear milestone list --project <projectId>
+Usage:   x-linear milestone list --project <projectId>
 
 Description:
 
@@ -50,7 +50,7 @@ Options:
 > View milestone details
 
 ```
-Usage:   linear milestone view <milestoneId>
+Usage:   x-linear milestone view <milestoneId>
 
 Description:
 
@@ -67,7 +67,7 @@ Options:
 > Create a new project milestone
 
 ```
-Usage:   linear milestone create --project <projectId> --name <name>
+Usage:   x-linear milestone create --project <projectId> --name <name>
 
 Description:
 
@@ -88,7 +88,7 @@ Options:
 > Update an existing project milestone
 
 ```
-Usage:   linear milestone update <id>
+Usage:   x-linear milestone update <id>
 
 Description:
 
@@ -110,7 +110,7 @@ Options:
 > Delete a project milestone
 
 ```
-Usage:   linear milestone delete <id>
+Usage:   x-linear milestone delete <id>
 
 Description:
 

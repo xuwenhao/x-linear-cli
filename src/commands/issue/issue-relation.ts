@@ -28,19 +28,19 @@ const addRelationCommand = new Command()
   .arguments("<issueId:string> <relationType:string> <relatedIssueId:string>")
   .example(
     "Mark issue as blocked by another",
-    "linear issue relation add ENG-123 blocked-by ENG-100",
+    "x-linear issue relation add ENG-123 blocked-by ENG-100",
   )
   .example(
     "Mark issue as blocking another",
-    "linear issue relation add ENG-123 blocks ENG-456",
+    "x-linear issue relation add ENG-123 blocks ENG-456",
   )
   .example(
     "Mark issues as related",
-    "linear issue relation add ENG-123 related ENG-456",
+    "x-linear issue relation add ENG-123 related ENG-456",
   )
   .example(
     "Mark issue as duplicate",
-    "linear issue relation add ENG-123 duplicate ENG-100",
+    "x-linear issue relation add ENG-123 duplicate ENG-100",
   )
   .action(async (_options, issueIdArg, relationTypeArg, relatedIssueIdArg) => {
     try {

@@ -1,29 +1,28 @@
 ---
 name: linear-cli
-description: Manage Linear issues from the command line using the linear cli. This skill allows automating linear management.
-allowed-tools: Bash(linear:*), Bash(curl:*)
+description: Manage Linear issues from the command line using the x-linear cli (a fork of linear-cli with OAuth/bot auth). This skill allows automating linear management.
+allowed-tools: Bash(x-linear:*), Bash(curl:*)
 ---
 
-# Linear CLI
+# x-linear CLI
 
-A CLI to manage Linear issues from the command line, with git and jj integration.
+A CLI to manage Linear issues from the command line, with git and jj integration. This is a fork of [schpet/linear-cli](https://github.com/schpet/linear-cli) that adds OAuth client-credentials (bot) auth; the command is `x-linear`.
 
 ## Prerequisites
 
-The `linear` command must be available on PATH. To check:
+The `x-linear` command must be available on PATH. To check:
 
 ```bash
-linear --version
+x-linear --version
 ```
 
-If not installed globally, you can run it without installing via npx:
+If it is not installed, install from source:
 
 ```bash
-npx @schpet/linear-cli --version
+git clone https://github.com/xuwenhao/x-linear-cli
+cd x-linear-cli
+deno task install   # installs the `x-linear` command
 ```
-
-All subsequent commands can be prefixed with `npx @schpet/linear-cli` in place of `linear`. Otherwise, follow the install instructions at:\
-https://github.com/schpet/linear-cli?tab=readme-ov-file#install
 
 ## Best Practices for Markdown Content
 
@@ -55,119 +54,119 @@ This is a detailed description with proper formatting.
 EOF
 
 # Create issue using the file
-linear issue create --title "My Issue" --description-file /tmp/description.md
+x-linear issue create --title "My Issue" --description-file /tmp/description.md
 
 # Or for comments
-linear issue comment add ENG-123 --body-file /tmp/comment.md
+x-linear issue comment add ENG-123 --body-file /tmp/comment.md
 ```
 
 **Only use inline flags** (`--description`, `--body`) for simple, single-line content.
 
 ## Available Commands
 
-Compact command list, generated from `linear --help`:
+Compact command list, generated from `x-linear --help`:
 
 ```bash
-linear auth
-linear auth login
-linear auth logout
-linear auth list
-linear auth default
-linear auth token
-linear auth whoami
-linear auth migrate
+x-linear auth
+x-linear auth login
+x-linear auth logout
+x-linear auth list
+x-linear auth default
+x-linear auth token
+x-linear auth whoami
+x-linear auth migrate
 
-linear issue
-linear issue id
-linear issue mine
-linear issue query
-linear issue title
-linear issue start
-linear issue view
-linear issue url
-linear issue describe
-linear issue commits
-linear issue pull-request
-linear issue delete
-linear issue create
-linear issue update
-linear issue comment
-linear issue comment add
-linear issue comment delete
-linear issue comment update
-linear issue comment list
-linear issue attach
-linear issue link
-linear issue relation
-linear issue relation add
-linear issue relation delete
-linear issue relation list
-linear issue agent-session
-linear issue agent-session list
-linear issue agent-session view
+x-linear issue
+x-linear issue id
+x-linear issue mine
+x-linear issue query
+x-linear issue title
+x-linear issue start
+x-linear issue view
+x-linear issue url
+x-linear issue describe
+x-linear issue commits
+x-linear issue pull-request
+x-linear issue delete
+x-linear issue create
+x-linear issue update
+x-linear issue comment
+x-linear issue comment add
+x-linear issue comment delete
+x-linear issue comment update
+x-linear issue comment list
+x-linear issue attach
+x-linear issue link
+x-linear issue relation
+x-linear issue relation add
+x-linear issue relation delete
+x-linear issue relation list
+x-linear issue agent-session
+x-linear issue agent-session list
+x-linear issue agent-session view
 
-linear team
-linear team create
-linear team delete
-linear team list
-linear team id
-linear team autolinks
-linear team members
+x-linear team
+x-linear team create
+x-linear team delete
+x-linear team list
+x-linear team id
+x-linear team autolinks
+x-linear team members
 
-linear project
-linear project list
-linear project view
-linear project create
-linear project update
-linear project delete
+x-linear project
+x-linear project list
+x-linear project view
+x-linear project create
+x-linear project update
+x-linear project delete
 
-linear project-update
-linear project-update create
-linear project-update list
+x-linear project-update
+x-linear project-update create
+x-linear project-update list
 
-linear cycle
-linear cycle list
-linear cycle view
+x-linear cycle
+x-linear cycle list
+x-linear cycle view
 
-linear milestone
-linear milestone list
-linear milestone view
-linear milestone create
-linear milestone update
-linear milestone delete
+x-linear milestone
+x-linear milestone list
+x-linear milestone view
+x-linear milestone create
+x-linear milestone update
+x-linear milestone delete
 
-linear initiative
-linear initiative list
-linear initiative view
-linear initiative create
-linear initiative archive
-linear initiative update
-linear initiative unarchive
-linear initiative delete
-linear initiative add-project
-linear initiative remove-project
+x-linear initiative
+x-linear initiative list
+x-linear initiative view
+x-linear initiative create
+x-linear initiative archive
+x-linear initiative update
+x-linear initiative unarchive
+x-linear initiative delete
+x-linear initiative add-project
+x-linear initiative remove-project
 
-linear initiative-update
-linear initiative-update create
-linear initiative-update list
+x-linear initiative-update
+x-linear initiative-update create
+x-linear initiative-update list
 
-linear label
-linear label list
-linear label create
-linear label delete
+x-linear label
+x-linear label list
+x-linear label create
+x-linear label delete
 
-linear document
-linear document list
-linear document view
-linear document create
-linear document update
-linear document delete
+x-linear document
+x-linear document list
+x-linear document view
+x-linear document create
+x-linear document update
+x-linear document delete
 
-linear config
+x-linear config
 
-linear schema
+x-linear schema
 
-linear api
+x-linear api
 ```
 
 ## Reference Documentation
@@ -194,17 +193,17 @@ For curated examples of organization features (initiatives, labels, projects, bu
 To see available subcommands and flags, run `--help` on any command:
 
 ```bash
-linear --help
-linear issue --help
-linear issue list --help
-linear issue create --help
+x-linear --help
+x-linear issue --help
+x-linear issue list --help
+x-linear issue create --help
 ```
 
 Each command has detailed help output describing all available flags and options.
 
 Some commands have required flags that aren't obvious. Notable examples:
 
-- `issue list` requires a sort order — provide it via `--sort` (valid values: `manual`, `priority`), the `issue_sort` config option, or the `LINEAR_ISSUE_SORT` env var. Also requires `--team <key>` unless the team can be inferred from the directory — if unknown, run `linear team list` first.
+- `issue list` requires a sort order — provide it via `--sort` (valid values: `manual`, `priority`), the `issue_sort` config option, or the `LINEAR_ISSUE_SORT` env var. Also requires `--team <key>` unless the team can be inferred from the directory — if unknown, run `x-linear team list` first.
 - `--no-pager` is only supported on `issue list` — passing it to other commands like `project list` will error.
 
 ## Using the Linear GraphQL API Directly
@@ -216,7 +215,7 @@ Some commands have required flags that aren't obvious. Notable examples:
 Write the schema to a tempfile, then search it:
 
 ```bash
-linear schema -o "${TMPDIR:-/tmp}/linear-schema.graphql"
+x-linear schema -o "${TMPDIR:-/tmp}/linear-schema.graphql"
 grep -i "cycle" "${TMPDIR:-/tmp}/linear-schema.graphql"
 grep -A 30 "^type Issue " "${TMPDIR:-/tmp}/linear-schema.graphql"
 ```
@@ -227,39 +226,39 @@ grep -A 30 "^type Issue " "${TMPDIR:-/tmp}/linear-schema.graphql"
 
 ```bash
 # Simple query (no type markers, so inline is fine)
-linear api '{ viewer { id name email } }'
+x-linear api '{ viewer { id name email } }'
 
 # Query with variables — use heredoc to avoid escaping issues
-linear api --variable teamId=abc123 <<'GRAPHQL'
+x-linear api --variable teamId=abc123 <<'GRAPHQL'
 query($teamId: String!) { team(id: $teamId) { name } }
 GRAPHQL
 
 # Search issues by text
-linear api --variable term=onboarding <<'GRAPHQL'
+x-linear api --variable term=onboarding <<'GRAPHQL'
 query($term: String!) { searchIssues(term: $term, first: 20) { nodes { identifier title state { name } } } }
 GRAPHQL
 
 # Numeric and boolean variables
-linear api --variable first=5 <<'GRAPHQL'
+x-linear api --variable first=5 <<'GRAPHQL'
 query($first: Int!) { issues(first: $first) { nodes { title } } }
 GRAPHQL
 
 # Complex variables via JSON
-linear api --variables-json '{"filter": {"state": {"name": {"eq": "In Progress"}}}}' <<'GRAPHQL'
+x-linear api --variables-json '{"filter": {"state": {"name": {"eq": "In Progress"}}}}' <<'GRAPHQL'
 query($filter: IssueFilter!) { issues(filter: $filter) { nodes { title } } }
 GRAPHQL
 
 # Pipe to jq for filtering
-linear api '{ issues(first: 5) { nodes { identifier title } } }' | jq '.data.issues.nodes[].title'
+x-linear api '{ issues(first: 5) { nodes { identifier title } } }' | jq '.data.issues.nodes[].title'
 ```
 
 ### Advanced: Using curl directly
 
-For cases where you need full HTTP control, use `linear auth token`:
+For cases where you need full HTTP control, use `x-linear auth token`:
 
 ```bash
 curl -s -X POST https://api.linear.app/graphql \
   -H "Content-Type: application/json" \
-  -H "Authorization: $(linear auth token)" \
+  -H "Authorization: $(x-linear auth token)" \
   -d '{"query": "{ viewer { id } }"}'
 ```

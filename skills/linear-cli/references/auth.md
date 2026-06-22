@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-Usage:   linear auth
+Usage:   x-linear auth
 
 Description:
 
@@ -18,12 +18,12 @@ Options:
 
 Commands:
 
-  login                 - Add a workspace credential                     
-  logout   [workspace]  - Remove a workspace credential                  
-  list                  - List configured workspaces                     
-  default  [workspace]  - Set the default workspace                      
-  token                 - Print the configured API token                 
-  whoami                - Print information about the authenticated user 
+  login                 - Add a workspace credential                                               
+  logout   [workspace]  - Remove a workspace credential                                            
+  list                  - List configured workspaces                                               
+  default  [workspace]  - Set the default workspace                                                
+  token                 - Print the Authorization header value (API key, or `Bearer <OAuth token>`)
+  whoami                - Print information about the authenticated user                           
   migrate               - Migrate plaintext credentials to system keyring
 ```
 
@@ -34,7 +34,7 @@ Commands:
 > Add a workspace credential
 
 ```
-Usage:   linear auth login
+Usage:   x-linear auth login
 
 Description:
 
@@ -53,7 +53,7 @@ Options:
 > Remove a workspace credential
 
 ```
-Usage:   linear auth logout [workspace]
+Usage:   x-linear auth logout [workspace]
 
 Description:
 
@@ -71,7 +71,7 @@ Options:
 > List configured workspaces
 
 ```
-Usage:   linear auth list
+Usage:   x-linear auth list
 
 Description:
 
@@ -88,7 +88,7 @@ Options:
 > Set the default workspace
 
 ```
-Usage:   linear auth default [workspace]
+Usage:   x-linear auth default [workspace]
 
 Description:
 
@@ -102,14 +102,14 @@ Options:
 
 ### token
 
-> Print the configured API token
+> Print the Authorization header value (API key, or `Bearer <OAuth token>`)
 
 ```
-Usage:   linear auth token
+Usage:   x-linear auth token
 
 Description:
 
-  Print the configured API token
+  Print the Authorization header value (API key, or `Bearer <OAuth token>`)
 
 Options:
 
@@ -122,7 +122,7 @@ Options:
 > Print information about the authenticated user
 
 ```
-Usage:   linear auth whoami
+Usage:   x-linear auth whoami
 
 Description:
 
@@ -139,7 +139,7 @@ Options:
 > Migrate plaintext credentials to system keyring
 
 ```
-Usage:   linear auth migrate
+Usage:   x-linear auth migrate
 
 Description:
 

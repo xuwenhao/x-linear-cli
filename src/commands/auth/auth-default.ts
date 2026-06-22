@@ -18,7 +18,7 @@ export const defaultCommand = new Command()
 
       if (workspaces.length === 0) {
         throw new AuthError("No workspaces configured", {
-          suggestion: "Run `linear auth login` to add a workspace",
+          suggestion: "Run `x-linear auth login` to add a workspace",
         })
       }
 

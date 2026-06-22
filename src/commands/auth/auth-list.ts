@@ -77,7 +77,7 @@ export const listCommand = new Command()
 
       if (workspaces.length === 0) {
         console.log("No workspaces configured")
-        console.log("Run `linear auth login` to add a workspace")
+        console.log("Run `x-linear auth login` to add a workspace")
         return
       }
 
