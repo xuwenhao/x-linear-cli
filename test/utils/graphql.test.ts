@@ -131,6 +131,28 @@ Deno.test("resolveAuthorization - api key is sent raw (no Bearer prefix)", async
   }
 })
 
+Deno.test("resolveAuthorization - rejects --workspace combined with OAuth env auth", async () => {
+  for (const envVar of ["LINEAR_ACCESS_TOKEN", "LINEAR_CLIENT_ID"]) {
+    clearAuthEnv()
+    if (envVar === "LINEAR_CLIENT_ID") {
+      Deno.env.set("LINEAR_CLIENT_ID", "id")
+      Deno.env.set("LINEAR_CLIENT_SECRET", "secret")
+    } else {
+      Deno.env.set("LINEAR_ACCESS_TOKEN", "tok")
+    }
+    setCliWorkspace("some-workspace")
+    try {
+      await assertRejects(
+        () => resolveAuthorization(),
+        Error,
+        "Cannot use --workspace with OAuth env auth",
+      )
+    } finally {
+      clearAuthEnv()
+    }
+  }
+})
+
 Deno.test("resolveAuthorization - partial client credentials are rejected, not downgraded to API key", async () => {
   for (const present of ["LINEAR_CLIENT_ID", "LINEAR_CLIENT_SECRET"]) {
     clearAuthEnv()

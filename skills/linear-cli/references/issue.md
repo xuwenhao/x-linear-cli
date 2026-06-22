@@ -497,9 +497,9 @@ Options:
 
 Examples:
 
-  Link a URL to issue detected from branch linear issue link https://github.com/org/repo/pull/123            
-  Link a URL to a specific issue           linear issue link ENG-123 https://github.com/org/repo/pull/123    
-  Link with a custom title                 linear issue link ENG-123 https://example.com --title "Design doc"
+  Link a URL to issue detected from branch x-linear issue link https://github.com/org/repo/pull/123            
+  Link a URL to a specific issue           x-linear issue link ENG-123 https://github.com/org/repo/pull/123    
+  Link with a custom title                 x-linear issue link ENG-123 https://example.com --title "Design doc"
 ```
 
 ### relation
@@ -543,10 +543,10 @@ Options:
 
 Examples:
 
-  Mark issue as blocked by another linear issue relation add ENG-123 blocked-by ENG-100
-  Mark issue as blocking another   linear issue relation add ENG-123 blocks ENG-456    
-  Mark issues as related           linear issue relation add ENG-123 related ENG-456   
-  Mark issue as duplicate          linear issue relation add ENG-123 duplicate ENG-100
+  Mark issue as blocked by another x-linear issue relation add ENG-123 blocked-by ENG-100
+  Mark issue as blocking another   x-linear issue relation add ENG-123 blocks ENG-456    
+  Mark issues as related           x-linear issue relation add ENG-123 related ENG-456   
+  Mark issue as duplicate          x-linear issue relation add ENG-123 duplicate ENG-100
 ```
 
 ##### delete

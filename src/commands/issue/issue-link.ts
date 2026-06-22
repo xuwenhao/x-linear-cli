@@ -22,15 +22,15 @@ export const linkCommand = new Command()
   .option("-t, --title <title:string>", "Custom title for the link")
   .example(
     "Link a URL to issue detected from branch",
-    "linear issue link https://github.com/org/repo/pull/123",
+    "x-linear issue link https://github.com/org/repo/pull/123",
   )
   .example(
     "Link a URL to a specific issue",
-    "linear issue link ENG-123 https://github.com/org/repo/pull/123",
+    "x-linear issue link ENG-123 https://github.com/org/repo/pull/123",
   )
   .example(
     "Link with a custom title",
-    'linear issue link ENG-123 https://example.com --title "Design doc"',
+    'x-linear issue link ENG-123 https://example.com --title "Design doc"',
   )
   .action(async (options, urlOrIssueId, url) => {
     const { title } = options

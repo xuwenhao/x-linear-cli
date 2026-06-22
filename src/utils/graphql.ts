@@ -34,6 +34,11 @@ const PARTIAL_CREDENTIALS_MESSAGE =
   "Incomplete OAuth credentials: set both LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET " +
   "(or unset both). Refusing to fall back to a personal API key for a bot command."
 
+const WORKSPACE_OAUTH_CONFLICT_MESSAGE =
+  "Cannot use --workspace with OAuth env auth (LINEAR_ACCESS_TOKEN or " +
+  "LINEAR_CLIENT_ID/LINEAR_CLIENT_SECRET): the workspace is fixed by the token/app. " +
+  "Unset those to select a stored credential with --workspace."
+
 // Re-export error utilities for backward compatibility
 export { isClientError } from "./errors.ts"
 
@@ -97,7 +102,7 @@ export function getResolvedApiKey(): string | undefined {
     // Explicit --workspace flag must match a configured workspace
     throw new Error(
       `Workspace "${cliWorkspace}" not found in credentials. ` +
-        `Run \`linear auth login\` to add it, or \`linear auth list\` to see configured workspaces.`,
+        `Run \`x-linear auth login\` to add it, or \`x-linear auth list\` to see configured workspaces.`,
     )
   }
 
@@ -161,6 +166,14 @@ function toBearer(token: string): string {
  */
 export async function resolveAuthorization(): Promise<string> {
   const accessToken = Deno.env.get("LINEAR_ACCESS_TOKEN")
+
+  // OAuth env auth is bound to a single workspace (the token's / app's), so an
+  // explicit --workspace can't be honored — reject it rather than silently
+  // running against the wrong workspace (mirrors the LINEAR_API_KEY check).
+  if ((accessToken || hasClientCredentials()) && getCliWorkspace()) {
+    throw new Error(WORKSPACE_OAUTH_CONFLICT_MESSAGE)
+  }
+
   if (accessToken) {
     return toBearer(accessToken)
   }
