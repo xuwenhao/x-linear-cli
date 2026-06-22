@@ -348,8 +348,18 @@ await cliffySnapshotTest({
   canFail: true,
   async fn() {
     const tmpDir = await Deno.makeTempDir()
+    // Preserve any OAuth/bot env so this test asserts the "no credentials at
+    // all" path deterministically, regardless of the developer's environment.
+    const saved = {
+      clientId: Deno.env.get("LINEAR_CLIENT_ID"),
+      clientSecret: Deno.env.get("LINEAR_CLIENT_SECRET"),
+      accessToken: Deno.env.get("LINEAR_ACCESS_TOKEN"),
+    }
     try {
       Deno.env.delete("LINEAR_API_KEY")
+      Deno.env.delete("LINEAR_CLIENT_ID")
+      Deno.env.delete("LINEAR_CLIENT_SECRET")
+      Deno.env.delete("LINEAR_ACCESS_TOKEN")
       // Write an empty credentials file so loadCredentials() resets the cached credentials
       await Deno.mkdir(`${tmpDir}/linear`, { recursive: true })
       await Deno.writeTextFile(`${tmpDir}/linear/credentials.toml`, "")
@@ -358,6 +368,13 @@ await cliffySnapshotTest({
       await apiCommand.parse()
     } finally {
       Deno.env.delete("XDG_CONFIG_HOME")
+      if (saved.clientId) Deno.env.set("LINEAR_CLIENT_ID", saved.clientId)
+      if (saved.clientSecret) {
+        Deno.env.set("LINEAR_CLIENT_SECRET", saved.clientSecret)
+      }
+      if (saved.accessToken) {
+        Deno.env.set("LINEAR_ACCESS_TOKEN", saved.accessToken)
+      }
       await loadCredentials() // restore credentials from real path
       await Deno.remove(tmpDir, { recursive: true })
     }
