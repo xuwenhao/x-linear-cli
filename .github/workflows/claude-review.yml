@@ -10,8 +10,8 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write       # GitHub App OIDC token exchange
-      actions: read         # let Claude read CI results
+      id-token: write # GitHub App OIDC token exchange
+      actions: read # let Claude read CI results
     steps:
       - name: Checkout
         uses: actions/checkout@v6
